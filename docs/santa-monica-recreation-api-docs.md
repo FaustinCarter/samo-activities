@@ -415,35 +415,102 @@ Search/list activities with filters and pagination.
 
 Pagination is in `headers.page_info` (`total_page`, `total_records`, `page_number`).
 
+> **Note:** The fields below reflect the actual API response observed on 2026-02-15 and differ significantly from the original documentation. Fields such as `category_name`, `center_name`, `season_name`, `first_date`, `last_date`, `age_range`, `price`, and `spots_available` are **not present** in the list response.
+
 ```json
 {
   "activity_items": [
     {
       "id": 103620,
+      "name": "1Soul of Cali Creative Arts Camp Wk 1",
+      "number": "1201.101",
       "desc": "<p>HTML description...</p>",
-      "activity_online_start_time": "",
       "item_type": 1,
-      "detail_url": "https://...",
+      "detail_url": "https://apm.activecommunities.com/santamonicarecreation/Activity_Search/.../103620?locale=en-US",
+      "activity_online_start_time": "",
+      "only_one_day": false,
+      "date_range_start": "2026-03-30",
+      "date_range_end": "2026-04-03",
+      "date_range": "March 30, 2026 to April 3, 2026",
+      "date_range_description": "",
+      "location": {
+        "href": "",
+        "title": "",
+        "label": "Marine Park Building",
+        "type": 0,
+        "unit": ""
+      },
+      "ages": "5 - 11y 11m ",
+      "age_description": "Age at least 5 yrs but less than 11y 11m,",
+      "age_min_year": 5,
+      "age_min_month": 0,
+      "age_min_week": 0,
+      "age_max_year": 11,
+      "age_max_month": 11,
+      "age_max_week": 0,
+      "min_grade": null,
+      "max_grade": null,
+      "total_open": 35,
+      "already_enrolled": 5,
+      "search_from_price": null,
+      "search_from_price_desc": "",
+      "fee": {
+        "href": "https://apm.activecommunities.com/santamonicarecreation/Activity_Search/.../103620",
+        "title": "",
+        "label": "View fee details",
+        "type": 2,
+        "unit": ""
+      },
       "action_link": {
-        "href": "https://...",
+        "href": "https://anc.apm.activecommunities.com/santamonicarecreation/activity/search/enroll/103620?locale=en-US",
+        "title": "",
         "label": "Enroll Now",
         "type": 3,
         "unit": ""
       },
-      "enroll_now": { "href": "...", "label": "...", "type": 3, "unit": "" },
-      "name": "...",
-      "season_name": "Spring 2026",
-      "category_name": "...",
-      "center_name": "...",
-      "first_date": "2026-03-03",
-      "last_date": "2026-03-26",
-      "age_range": "5 - 11 yrs",
-      "spots_available": 15,
-      "price": "$53.00"
+      "enroll_now": {
+        "href": "https://anc.apm.activecommunities.com/santamonicarecreation/activity/search/enroll/103620?wishlist_id=0&locale=en-US",
+        "title": "",
+        "label": "Enroll Now",
+        "type": 3,
+        "unit": ""
+      },
+      "allow_drop_in_reg": false,
+      "allow_flexible_class": false,
+      "already_enrolled": 5,
+      "num_of_sub_activities": 0,
+      "sub_activity_ids": null,
+      "parent_activity": false,
+      "show_new_flag": false,
+      "show_wish_list": true,
+      "wish_list_id": 0,
+      "wish_list_participants": null,
+      "enrolled_participants": null,
+      "urgent_message": {
+        "group_id": 0,
+        "status_description": "",
+        "no_urgency_status_description": null
+      }
     }
   ]
 }
 ```
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | int | Activity ID |
+| `name` | string | Activity name |
+| `number` | string | Activity number, e.g. `"1201.101"` |
+| `date_range_start` | string | Start date, ISO format `YYYY-MM-DD` |
+| `date_range_end` | string | End date, ISO format `YYYY-MM-DD` |
+| `date_range` | string | Pre-formatted date range, e.g. `"March 30, 2026 to April 3, 2026"` |
+| `location.label` | string | Facility/room name, e.g. `"Marine Park Building"` |
+| `ages` | string | Age range display string, e.g. `"5 - 11y 11m"` |
+| `age_description` | string | Verbose age description |
+| `total_open` | int | Spots still available |
+| `already_enrolled` | int | Number of enrolled participants |
+| `fee.href` | string | Link to fee details page (no price value is returned) |
+| `action_link` | object | Enrollment CTA with `href` and `label` |
 
 ---
 

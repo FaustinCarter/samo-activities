@@ -1,22 +1,23 @@
 <article class="activity-card">
-    <div class="activity-category">{{ activity.category_name }}</div>
     <h3 class="activity-name">{{ activity.name }}</h3>
-    
+
     <div class="activity-meta">
-        <span class="activity-center">{{ activity.center_name }}</span>
-        {% if activity.season_name %}
-        <span class="activity-season">{{ activity.season_name }}</span>
+        {% if activity.number %}
+        <span class="activity-number">#{{ activity.number }}</span>
+        {% endif %}
+        {% if activity.location and activity.location.label %}
+        <span class="activity-location">{{ activity.location.label }}</span>
         {% endif %}
     </div>
-    
+
     <div class="activity-dates">
-        {% if activity.first_date and activity.last_date %}
-            {{ activity.first_date }} &ndash; {{ activity.last_date }}
-        {% elif activity.first_date %}
-            {{ activity.first_date }}
+        {% if activity.date_range_start and activity.date_range_end %}
+            {{ activity.date_range_start|format_date }} &ndash; {{ activity.date_range_end|format_date }}
+        {% elif activity.date_range_start %}
+            {{ activity.date_range_start|format_date }}
         {% endif %}
     </div>
-    
+
     {% if meeting_dates.get(activity.id) %}
     <div class="activity-schedule">
         {% for pattern in meeting_dates[activity.id].activity_patterns %}
@@ -31,19 +32,16 @@
         {% endfor %}
     </div>
     {% endif %}
-    
+
     <div class="activity-details">
-        {% if activity.age_range %}
-        <span class="activity-age">{{ activity.age_range }}</span>
+        {% if activity.ages %}
+        <span class="activity-age">{{ activity.ages }}</span>
         {% endif %}
-        {% if activity.price %}
-        <span class="activity-price">{{ activity.price }}</span>
-        {% endif %}
-        {% if activity.spots_available is not none %}
-        <span class="activity-spots">{{ activity.spots_available }} spots</span>
+        {% if activity.total_open is not none %}
+        <span class="activity-spots">{{ activity.total_open }} spots open</span>
         {% endif %}
     </div>
-    
+
     {% if activity.action_link and activity.action_link.href %}
     <div class="activity-actions">
         <a href="{{ activity.action_link.href }}" class="btn btn-enroll" target="_blank">

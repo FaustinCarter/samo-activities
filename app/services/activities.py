@@ -1,4 +1,5 @@
 import asyncio
+
 import httpx
 
 from app import client as client_module
@@ -48,6 +49,7 @@ async def search(
 
     body = data.get("body", {})
     items_data = body.get("activity_items", [])
+
     items = [activity_models.ActivityItem.model_validate(item) for item in items_data]
 
     return items, page_info
