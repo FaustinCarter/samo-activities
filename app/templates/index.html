@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="filters">
+    <form method="get" action="/" class="filter-form">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="q">Search</label>
+                <input type="text" id="q" name="q" value="{{ params.q }}" placeholder="e.g. swim, yoga, basketball">
+            </div>
+            
+            <div class="filter-group">
+                <label for="date_after">From</label>
+                <input type="date" id="date_after" name="date_after" value="{{ params.date_after }}">
+            </div>
+            
+            <div class="filter-group">
+                <label for="date_before">To</label>
+                <input type="date" id="date_before" name="date_before" value="{{ params.date_before }}">
+            </div>
+        </div>
+        
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="category_ids">Category</label>
+                <select id="category_ids" name="category_ids" multiple>
+                    {% for cat in filters.categories %}
+                    <option value="{{ cat.id }}" {% if cat.id|int in params.category_ids %}selected{% endif %}>
+                        {{ cat.display_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="center_ids">Location</label>
+                <select id="center_ids" name="center_ids" multiple>
+                    {% for center in filters.centers %}
+                    <option value="{{ center.id }}" {% if center.id|int in params.center_ids %}selected{% endif %}>
+                        {{ center.display_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group filter-group--checkbox">
+                <label>
+                    <input type="checkbox" name="show_schedule" value="true" {% if params.show_schedule %}checked{% endif %}>
+                    Show schedule (slower)
+                </label>
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="results">
+    <div class="results-header">
+        <p class="results-count">
+            {% if page_info.total_records > 0 %}
+                Showing page {{ current_page }} of {{ page_info.total_page }} 
+                ({{ page_info.total_records }} activities)
+            {% else %}
+                No activities found
+            {% endif %}
+        </p>
+    </div>
+    
+    {% if activities %}
+    <div class="activity-grid">
+        {% for activity in activities %}
+            {% include "partials/activity_card.html" %}
+        {% endfor %}
+    </div>
+    
+    <nav class="pagination">
+        {% if current_page > 1 %}
+        <a href="?{{ pagination_query(current_page - 1) }}" class="btn">&larr; Previous</a>
+        {% endif %}
+        
+        <span class="pagination-info">Page {{ current_page }} of {{ page_info.total_page }}</span>
+        
+        {% if current_page < page_info.total_page %}
+        <a href="?{{ pagination_query(current_page + 1) }}" class="btn">Next &rarr;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}
