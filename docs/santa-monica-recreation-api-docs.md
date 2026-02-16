@@ -589,7 +589,7 @@ Returns the schedule patterns and registration windows for an activity.
     "no_meeting_dates": false,
     "user_entered": false,
     "online_activity_date_description": "",
-    "current_date": "2026-02-15 10:33:54",
+    "current_date": "2026-02-15 23:26:36",
     "additional_dates": [],
     "activity_patterns": [
       {
@@ -611,9 +611,36 @@ Returns the schedule patterns and registration windows for an activity.
       "first_daytime_internet_nonresidents": null,
       "first_daytime_internet_members": null,
       "last_daytime_internet": null,
+      "drop_in_first_daytime_internet": null,
+      "drop_in_first_daytime_internet_nonresidents": null,
+      "drop_in_first_daytime_internet_members": null,
+      "drop_in_last_daytime_internet": null,
       "for_drop_in_activity": false
     },
-    "enrollment_datetimes": { ... }
+    "local_priority_enrollment_datetimes": {
+      "first_daytime_internet": null,
+      "first_daytime_internet_nonresidents": null,
+      "first_daytime_internet_members": null,
+      "last_daytime_internet": null,
+      "drop_in_first_daytime_internet": null,
+      "drop_in_first_daytime_internet_nonresidents": null,
+      "drop_in_first_daytime_internet_members": null,
+      "drop_in_last_daytime_internet": null,
+      "for_drop_in_activity": false
+    },
+    "enrollment_datetimes": [
+      {
+        "first_daytime_internet": "2026-01-28 06:00:00",
+        "first_daytime_internet_nonresidents": "2026-02-04 06:00:00",
+        "first_daytime_internet_members": null,
+        "last_daytime_internet": "2026-03-01 00:00:00",
+        "drop_in_first_daytime_internet": null,
+        "drop_in_first_daytime_internet_nonresidents": null,
+        "drop_in_first_daytime_internet_members": null,
+        "drop_in_last_daytime_internet": null,
+        "for_drop_in_activity": false
+      }
+    ]
   }
 }
 ```
