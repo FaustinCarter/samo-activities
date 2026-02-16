@@ -179,8 +179,8 @@ def build_calendar_data(
     earliest_date: datetime.date | None = None
     latest_date: datetime.date | None = None
 
-    for activity in activities:
-        color = PILL_COLORS[activity.id % len(PILL_COLORS)]
+    for index, activity in enumerate(activities):
+        color = PILL_COLORS[index % len(PILL_COLORS)]
         meeting_info = meeting_dates.get(activity.id)
 
         # Collect time info from patterns
