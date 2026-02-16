@@ -1,0 +1,94 @@
+{# Calendar view: vertical stack of months, each with a 7-column grid.       #}
+{# Events are shown as stacked colored pills. Clicking shows a popup.         #}
+
+<div class="calendar" id="cal-root">
+
+{% if not calendar_months %}
+<p class="cal-no-events">No events to display on the calendar for this page of results.</p>
+{% else %}
+
+{% for month in calendar_months %}
+<section class="cal-month" aria-label="{{ month.name }}">
+    <h2 class="cal-month-title">{{ month.name }}</h2>
+    <div class="cal-grid" role="grid" aria-label="{{ month.name }}">
+        {# Day-of-week header row #}
+        <div class="cal-header-row" role="row">
+            <div class="cal-header-cell" role="columnheader" abbr="Monday">Mon</div>
+            <div class="cal-header-cell" role="columnheader" abbr="Tuesday">Tue</div>
+            <div class="cal-header-cell" role="columnheader" abbr="Wednesday">Wed</div>
+            <div class="cal-header-cell" role="columnheader" abbr="Thursday">Thu</div>
+            <div class="cal-header-cell" role="columnheader" abbr="Friday">Fri</div>
+            <div class="cal-header-cell" role="columnheader" abbr="Saturday">Sat</div>
+            <div class="cal-header-cell" role="columnheader" abbr="Sunday">Sun</div>
+        </div>
+        {# Week rows #}
+        {% for week in month.weeks %}
+        <div class="cal-week-row" role="row">
+            {% for cell in week %}
+            <div class="cal-day{% if not cell.in_month %} cal-day--out{% endif %}{% if cell.is_today is defined and cell.is_today %} cal-day--today{% endif %}"
+                 role="gridcell"
+                 {% if cell.iso_date %}aria-label="{% if cell.is_today is defined and cell.is_today %}Today, {% endif %}{{ month.name[:3] }} {{ cell.day }}"{% endif %}>
+                {% if cell.in_month %}
+                <span class="cal-day-num{% if cell.is_today is defined and cell.is_today %} cal-day-num--today{% endif %}">{{ cell.day }}</span>
+                {% if cell.events %}
+                <ul class="cal-events-list" aria-label="{{ cell.events|length }} event{% if cell.events|length != 1 %}s{% endif %}">
+                    {% for event in cell.events %}
+                    <li>
+                        <button class="cal-event-pill"
+                                style="background-color: {{ event.color }};"
+                                data-event="{{ {
+                                    'id': event.id,
+                                    'name': event.name,
+                                    'location': event.location,
+                                    'ages': event.ages,
+                                    'total_open': event.total_open,
+                                    'action_link_href': event.action_link_href,
+                                    'action_link_label': event.action_link_label,
+                                    'date_range_start': event.date_range_start,
+                                    'date_range_end': event.date_range_end,
+                                    'starting_time': event.starting_time,
+                                    'ending_time': event.ending_time,
+                                    'number': event.number
+                                } | tojson | forceescape }}"
+                                aria-label="{{ event.name }}{% if event.starting_time %}, {{ event.starting_time }}{% if event.ending_time %} – {{ event.ending_time }}{% endif %}{% endif %}">
+                            <span class="cal-event-name">{{ event.name }}</span>
+                            {% if event.starting_time %}
+                            <span class="cal-event-time">{{ event.starting_time }}{% if event.ending_time %}&ndash;{{ event.ending_time }}{% endif %}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>{# /.cal-grid #}
+</section>
+{% endfor %}
+
+{# Calendar-view pagination (same page nav as card view) #}
+<nav class="pagination">
+    {% if current_page > 1 %}
+    <a href="?{{ pagination_query(current_page - 1) }}" class="btn">&larr; Previous</a>
+    {% endif %}
+    
+    <span class="pagination-info">Page {{ current_page }} of {{ page_info.total_page }}</span>
+    
+    {% if current_page < page_info.total_page %}
+    <a href="?{{ pagination_query(current_page + 1) }}" class="btn">Next &rarr;</a>
+    {% endif %}
+</nav>
+
+{% endif %}{# /if calendar_months #}
+
+</div>{# /#cal-root #}
+
+<!-- Event popup — defined here alongside the rest of the calendar markup -->
+<div id="cal-popup" class="cal-popup" hidden aria-modal="true" role="dialog" aria-label="Activity details">
+    <button class="cal-popup-close" id="cal-popup-close" aria-label="Close">&times;</button>
+    <div id="cal-popup-content"></div>
+</div>
+<div id="cal-popup-backdrop" class="cal-popup-backdrop" hidden></div>

@@ -2,7 +2,8 @@
 
 {% block content %}
 <section class="filters">
-    <form method="get" action="/" class="filter-form">
+    <form method="get" action="/" class="filter-form" id="filter-form">
+        <input type="hidden" name="view" id="view-input" value="{{ params.view }}">
         <div class="filter-row">
             <div class="filter-group">
                 <label for="q">Search</label>
@@ -59,17 +60,51 @@
 
 <section class="results">
     <div class="results-header">
-        <p class="results-count">
-            {% if page_info.total_records > 0 %}
-                Showing page {{ current_page }} of {{ page_info.total_page }} 
-                ({{ page_info.total_records }} activities)
-            {% else %}
-                No activities found
-            {% endif %}
-        </p>
+        <div class="results-header-left">
+            <p class="results-count">
+                {% if page_info.total_records > 0 %}
+                    Showing page {{ current_page }} of {{ page_info.total_page }} 
+                    ({{ page_info.total_records }} activities)
+                {% else %}
+                    No activities found
+                {% endif %}
+            </p>
+        </div>
+        {% if activities %}
+        <div class="view-toggle" role="group" aria-label="View mode">
+            <button type="button"
+                    class="view-toggle-btn {% if params.view != 'calendar' %}active{% endif %}"
+                    data-view="card"
+                    aria-pressed="{{ 'true' if params.view != 'calendar' else 'false' }}">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <rect x="0" y="0" width="7" height="7" rx="1"/>
+                    <rect x="9" y="0" width="7" height="7" rx="1"/>
+                    <rect x="0" y="9" width="7" height="7" rx="1"/>
+                    <rect x="9" y="9" width="7" height="7" rx="1"/>
+                </svg>
+                Card view
+            </button>
+            <button type="button"
+                    class="view-toggle-btn {% if params.view == 'calendar' %}active{% endif %}"
+                    data-view="calendar"
+                    aria-pressed="{{ 'true' if params.view == 'calendar' else 'false' }}">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <rect x="0" y="0" width="16" height="3" rx="1"/>
+                    <rect x="0" y="5" width="16" height="3" rx="1"/>
+                    <rect x="0" y="10" width="16" height="3" rx="1"/>
+                    <rect x="0" y="14" width="16" height="2" rx="1"/>
+                </svg>
+                Calendar view
+            </button>
+        </div>
+        {% endif %}
     </div>
     
     {% if activities %}
+
+    {% if params.view == 'calendar' %}
+    {% include "partials/calendar.html" %}
+    {% else %}
     <div class="activity-grid">
         {% for activity in activities %}
             {% include "partials/activity_card.html" %}
@@ -88,5 +123,17 @@
         {% endif %}
     </nav>
     {% endif %}
+
+    {% endif %}
 </section>
+
+<script>
+// View toggle: switch between card and calendar by re-submitting the form
+document.querySelectorAll('.view-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.getElementById('view-input').value = this.dataset.view;
+        document.getElementById('filter-form').submit();
+    });
+});
+</script>
 {% endblock %}
