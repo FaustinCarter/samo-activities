@@ -1,5 +1,7 @@
 <article class="activity-card">
-    <h3 class="activity-name">{{ activity.name }}</h3>
+    <h3 class="activity-name">
+        <a href="/activity/{{ activity.id }}">{{ activity.name }}</a>
+    </h3>
 
     <div class="activity-meta">
         {% if activity.number %}
@@ -41,6 +43,21 @@
         <span class="activity-spots">{{ activity.total_open }} spots open</span>
         {% endif %}
     </div>
+
+    {% if prices and prices.get(activity.id) %}
+    {% set activity_price = prices[activity.id] %}
+    <div class="activity-price">
+        {% if activity_price.free %}
+        <span class="price-free">Free</span>
+        {% else %}
+            {% for price_group in activity_price.prices %}
+                {% for p in price_group.details %}
+                <span class="price-item-inline">{{ p.price }}{% if p.description %} <span class="price-desc-inline">({{ p.description }})</span>{% endif %}</span>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </div>
+    {% endif %}
 
     {% if activity.action_link and activity.action_link.href %}
     <div class="activity-actions">

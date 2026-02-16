@@ -261,8 +261,30 @@ a:hover {
 }
 
 .activity-price {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.price-item-inline {
     font-weight: 600;
     color: #27ae60;
+}
+
+.price-desc-inline {
+    font-weight: 400;
+    color: #666;
+}
+
+.activity-name a {
+    color: #1a5276;
+    text-decoration: none;
+}
+
+.activity-name a:hover {
+    text-decoration: underline;
 }
 
 .activity-spots {
@@ -272,6 +294,225 @@ a:hover {
 .activity-actions {
     margin-top: auto;
     padding-top: 0.75rem;
+}
+
+/* ── Detail page ─────────────────────────────────────────── */
+
+.detail-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem 0 3rem;
+}
+
+.detail-nav {
+    margin-bottom: 1.5rem;
+}
+
+.btn-back {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    color: #555;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.875rem;
+}
+
+.btn-back:hover {
+    background-color: #f5f5f5;
+    border-color: #aaa;
+}
+
+.detail-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e8e8e8;
+}
+
+.detail-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    color: #1a5276;
+}
+
+.detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.detail-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    background-color: #e8f0f8;
+    color: #1a5276;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.detail-section {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-section:last-child {
+    border-bottom: none;
+}
+
+.detail-section h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #888;
+    font-weight: 600;
+}
+
+.detail-section p {
+    margin: 0 0 0.4rem;
+    color: #333;
+}
+
+.detail-dates {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.detail-subcategory {
+    color: #666;
+}
+
+.detail-patterns {
+    margin-top: 0.5rem;
+}
+
+.detail-patterns .schedule-item {
+    padding: 0.2rem 0;
+}
+
+/* Registration dates */
+.reg-row {
+    display: flex;
+    gap: 1rem;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+    align-items: baseline;
+}
+
+.reg-label {
+    color: #666;
+    min-width: 200px;
+    flex-shrink: 0;
+}
+
+.reg-value {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Facilities */
+.detail-facility {
+    color: #333;
+    font-size: 0.95rem;
+}
+
+/* Pricing */
+.price-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.3rem 0;
+    font-size: 0.95rem;
+}
+
+.price-amount {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #27ae60;
+    min-width: 80px;
+}
+
+.price-desc {
+    color: #555;
+}
+
+.price-free {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #27ae60;
+}
+
+.price-unavailable {
+    color: #888;
+    font-style: italic;
+}
+
+/* Instructors */
+.instructor {
+    padding: 0.5rem 0;
+}
+
+.instructor + .instructor {
+    border-top: 1px solid #f0f0f0;
+}
+
+.instructor-name {
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.25rem;
+}
+
+.instructor-primary {
+    font-weight: 400;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.instructor-bio {
+    color: #555;
+    font-size: 0.9rem;
+    margin: 0.25rem 0 0;
+}
+
+.instructor-email {
+    font-size: 0.875rem;
+    margin: 0.2rem 0 0;
+}
+
+/* Description */
+.detail-description {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #333;
+}
+
+.detail-description p {
+    margin: 0 0 0.75rem;
+}
+
+.detail-description ul,
+.detail-description ol {
+    margin: 0 0 0.75rem;
+    padding-left: 1.5rem;
+}
+
+/* Enroll button */
+.detail-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.btn-enroll--large {
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
 }
 
 /* Pagination */

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}{{ detail.activity_name }} — Santa Monica Activities{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+
+    <nav class="detail-nav">
+        <a href="javascript:history.back()" class="btn btn-back">&larr; Back to Results</a>
+    </nav>
+
+    <header class="detail-header">
+        <h1 class="detail-title">{{ detail.activity_name }}</h1>
+        <div class="detail-meta">
+            {% if detail.activity_number %}
+            <span class="detail-badge">#{{ detail.activity_number }}</span>
+            {% endif %}
+            {% if detail.activity_type %}
+            <span class="detail-badge">{{ detail.activity_type }}</span>
+            {% endif %}
+            {% if detail.season_name %}
+            <span class="detail-badge">{{ detail.season_name }}</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="detail-body">
+
+        {# --- Category --- #}
+        {% if detail.category %}
+        <section class="detail-section">
+            <h2>Category</h2>
+            <p>
+                {{ detail.category }}
+                {% if detail.sub_category %}
+                <span class="detail-subcategory"> / {{ detail.sub_category }}</span>
+                {% endif %}
+            </p>
+        </section>
+        {% endif %}
+
+        {# --- Schedule --- #}
+        <section class="detail-section">
+            <h2>Schedule</h2>
+            {% if detail.first_date and detail.last_date %}
+            <p class="detail-dates">
+                {{ detail.first_date|format_date }} &ndash; {{ detail.last_date|format_date }}
+            </p>
+            {% elif detail.first_date %}
+            <p class="detail-dates">{{ detail.first_date|format_date }}</p>
+            {% endif %}
+
+            {% if meeting_dates and not meeting_dates.no_meeting_dates and meeting_dates.activity_patterns %}
+            <div class="detail-patterns">
+                {% for pattern in meeting_dates.activity_patterns %}
+                    {% for pd in pattern.pattern_dates %}
+                    <div class="schedule-item">
+                        <span class="schedule-days">{{ pd.weekdays }}</span>
+                        {% if pd.starting_time and pd.ending_time %}
+                        <span class="schedule-time">
+                            {{ pd.starting_time[:5] }} &ndash; {{ pd.ending_time[:5] }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        {# --- Registration Dates --- #}
+        {% if meeting_dates %}
+            {% set enroll = meeting_dates.enrollment_datetimes %}
+            {% set priority = meeting_dates.priority_enrollment_datetimes %}
+            {% if (enroll and (enroll.first_daytime_internet or enroll.last_daytime_internet))
+               or (priority and (priority.first_daytime_internet or priority.last_daytime_internet)) %}
+            <section class="detail-section">
+                <h2>Registration</h2>
+                {% if priority and priority.first_daytime_internet %}
+                <div class="reg-row">
+                    <span class="reg-label">Priority opens</span>
+                    <span class="reg-value">{{ priority.first_daytime_internet }}</span>
+                </div>
+                {% endif %}
+                {% if priority and priority.first_daytime_internet_nonresidents %}
+                <div class="reg-row">
+                    <span class="reg-label">Non-resident priority opens</span>
+                    <span class="reg-value">{{ priority.first_daytime_internet_nonresidents }}</span>
+                </div>
+                {% endif %}
+                {% if enroll and enroll.first_daytime_internet %}
+                <div class="reg-row">
+                    <span class="reg-label">General registration opens</span>
+                    <span class="reg-value">{{ enroll.first_daytime_internet }}</span>
+                </div>
+                {% endif %}
+                {% if enroll and enroll.last_daytime_internet %}
+                <div class="reg-row">
+                    <span class="reg-label">Registration closes</span>
+                    <span class="reg-value">{{ enroll.last_daytime_internet }}</span>
+                </div>
+                {% endif %}
+            </section>
+            {% endif %}
+        {% endif %}
+
+        {# --- Location / Facilities --- #}
+        {% if detail.facilities %}
+        <section class="detail-section">
+            <h2>Location</h2>
+            {% for facility in detail.facilities %}
+            <p class="detail-facility">{{ facility }}</p>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {# --- Pricing --- #}
+        {% if price %}
+        <section class="detail-section">
+            <h2>Pricing</h2>
+            {% if price.free %}
+            <p class="price-free">Free</p>
+            {% elif price.prices %}
+                {% for price_group in price.prices %}
+                    {% for p in price_group.details %}
+                    <div class="price-item">
+                        <span class="price-amount">{{ p.price }}</span>
+                        {% if p.description %}
+                        <span class="price-desc">{{ p.description }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+            <p class="price-unavailable">Pricing information unavailable online.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        {# --- Instructors --- #}
+        {% if detail.instructors %}
+        <section class="detail-section">
+            <h2>Instructor{% if detail.instructors|length > 1 %}s{% endif %}</h2>
+            {% for instructor in detail.instructors %}
+            <div class="instructor">
+                <p class="instructor-name">
+                    {{ instructor.first_name }} {{ instructor.last_name }}
+                    {% if instructor.is_primary_instructor and detail.instructors|length > 1 %}
+                    <span class="instructor-primary">(Primary)</span>
+                    {% endif %}
+                </p>
+                {% if instructor.bio %}
+                <p class="instructor-bio">{{ instructor.bio }}</p>
+                {% endif %}
+                {% if instructor.email %}
+                <p class="instructor-email">
+                    <a href="mailto:{{ instructor.email }}">{{ instructor.email }}</a>
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {# --- Description --- #}
+        {% if detail.online_notes %}
+        <section class="detail-section">
+            <h2>Description</h2>
+            <div class="detail-description">
+                {{ detail.online_notes|safe }}
+            </div>
+        </section>
+        {% endif %}
+
+    </div>
+
+    {# --- Enroll button --- #}
+    {% if button_status and button_status.action_link and button_status.action_link.href %}
+    <div class="detail-actions">
+        <a href="{{ button_status.action_link.href }}" class="btn btn-enroll btn-enroll--large" target="_blank">
+            {{ button_status.action_link.label or "Enroll Now" }}
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
