@@ -1,7 +1,6 @@
 import datetime
 import logging
 import pathlib
-import urllib.parse
 
 import fastapi
 from fastapi import staticfiles
