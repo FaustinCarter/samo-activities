@@ -46,7 +46,9 @@ def create_app() -> fastapi.FastAPI:
 
     # Mount static files
     static_dir = pathlib.Path(__file__).parent.parent / "static"
-    app.mount("/static", staticfiles.StaticFiles(directory=str(static_dir)), name="static")
+    app.mount(
+        "/static", staticfiles.StaticFiles(directory=str(static_dir)), name="static"
+    )
 
     # Include routes
     app.include_router(activities_routes.router)

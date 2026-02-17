@@ -209,8 +209,12 @@ def build_calendar_data(
             "location": activity.location.label if activity.location else "",
             "ages": activity.ages,
             "total_open": activity.total_open,
-            "action_link_href": activity.action_link.href if activity.action_link else "",
-            "action_link_label": activity.action_link.label if activity.action_link else "Enroll",
+            "action_link_href": activity.action_link.href
+            if activity.action_link
+            else "",
+            "action_link_label": activity.action_link.label
+            if activity.action_link
+            else "Enroll",
             "date_range_start": activity.date_range_start,
             "date_range_end": activity.date_range_end,
             "starting_time": starting_time,
@@ -252,29 +256,35 @@ def build_calendar_data(
             week_days = []
             for day_num in week:
                 if day_num == 0:
-                    week_days.append({
-                        "day": 0,
-                        "in_month": False,
-                        "iso_date": "",
-                        "events": [],
-                    })
+                    week_days.append(
+                        {
+                            "day": 0,
+                            "in_month": False,
+                            "iso_date": "",
+                            "events": [],
+                        }
+                    )
                 else:
                     d = datetime.date(year, month, day_num)
-                    week_days.append({
-                        "day": day_num,
-                        "in_month": True,
-                        "iso_date": d.isoformat(),
-                        "is_today": d == today,
-                        "events": event_by_date.get(d, []),
-                    })
+                    week_days.append(
+                        {
+                            "day": day_num,
+                            "in_month": True,
+                            "iso_date": d.isoformat(),
+                            "is_today": d == today,
+                            "events": event_by_date.get(d, []),
+                        }
+                    )
             weeks.append(week_days)
 
-        months.append({
-            "year": year,
-            "month": month,
-            "name": month_name,
-            "weeks": weeks,
-        })
+        months.append(
+            {
+                "year": year,
+                "month": month,
+                "name": month_name,
+                "weeks": weeks,
+            }
+        )
 
         # Advance to next month
         if month == 12:
@@ -334,9 +344,7 @@ async def browse_activities(
     filters_task = activities_service.get_filters()
     search_task = activities_service.search(pattern, page_number=page)
 
-    filters, (activities, page_info) = await asyncio.gather(
-        filters_task, search_task
-    )
+    filters, (activities, page_info) = await asyncio.gather(filters_task, search_task)
 
     # Meeting dates are needed for calendar view (to expand patterns to dates)
     # and optionally for card view when show_full_details is on.
@@ -354,7 +362,9 @@ async def browse_activities(
                 activities_service.get_prices_batch(activity_ids),
             )
         elif need_meeting_dates:
-            meeting_dates = await activities_service.get_meeting_dates_batch(activity_ids)
+            meeting_dates = await activities_service.get_meeting_dates_batch(
+                activity_ids
+            )
         elif need_prices:
             prices = await activities_service.get_prices_batch(activity_ids)
 

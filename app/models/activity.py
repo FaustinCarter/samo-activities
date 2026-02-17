@@ -12,14 +12,14 @@ class ActivityItem(pydantic.BaseModel):
     id: int
     name: str = ""
     desc: str = ""
-    number: str = ""                  # Activity number, e.g. "1201.101"
-    date_range_start: str = ""        # ISO date, e.g. "2026-03-30"
-    date_range_end: str = ""          # ISO date, e.g. "2026-04-03"
+    number: str = ""  # Activity number, e.g. "1201.101"
+    date_range_start: str = ""  # ISO date, e.g. "2026-03-30"
+    date_range_end: str = ""  # ISO date, e.g. "2026-04-03"
     location: ActionLink | None = None  # .label holds the facility name
-    ages: str = ""                    # e.g. "5 - 11y 11m"
-    total_open: int | None = None     # Spots still available
+    ages: str = ""  # e.g. "5 - 11y 11m"
+    total_open: int | None = None  # Spots still available
     already_enrolled: int | None = None
-    fee: ActionLink | None = None     # .href links to fee details page
+    fee: ActionLink | None = None  # .href links to fee details page
     action_link: ActionLink | None = None
     detail_url: str = ""
 

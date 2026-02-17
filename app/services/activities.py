@@ -80,7 +80,9 @@ async def get_meeting_dates(
                 activity_id,
                 list(meeting_data.keys()),
             )
-            logger.debug("meeting_and_registration_dates for %s: %s", activity_id, meeting_data)
+            logger.debug(
+                "meeting_and_registration_dates for %s: %s", activity_id, meeting_data
+            )
             return activity_models.MeetingAndRegistrationDates.model_validate(
                 meeting_data
             )
