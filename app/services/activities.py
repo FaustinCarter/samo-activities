@@ -34,7 +34,7 @@ async def search(
         api_client = client_module.api_client
 
     request = activity_models.ActivitySearchRequest(activity_search_pattern=pattern)
-    page_info = {
+    request_page_info = {
         "order_by": "",
         "page_number": page_number,
         "total_records_per_page": 20,
@@ -43,19 +43,21 @@ async def search(
     data = await api_client.post(
         "/activities/list",
         json_body=request.model_dump(),
-        page_info=page_info,
+        page_info=request_page_info,
         client=http_client,
     )
 
     headers = data.get("headers", {})
-    page_info = common_models.PageInfo.model_validate(headers.get("page_info", {}))
+    response_page_info = common_models.PageInfo.model_validate(
+        headers.get("page_info", {})
+    )
 
     body = data.get("body", {})
     items_data = body.get("activity_items", [])
 
     items = [activity_models.ActivityItem.model_validate(item) for item in items_data]
 
-    return items, page_info
+    return items, response_page_info
 
 
 async def get_meeting_dates(
