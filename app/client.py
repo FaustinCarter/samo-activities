@@ -4,12 +4,6 @@ import httpx
 
 from app import config
 
-_BASE_SITE_URL = "https://anc.apm.activecommunities.com/santamonicarecreation"
-_REFERER = (
-    f"{_BASE_SITE_URL}/activity/search"
-    "?onlineSiteId=0&activity_select_param=2&viewMode=list"
-)
-
 
 class APIError(Exception):
     """Raised when the upstream API returns a non-success response code."""
@@ -28,6 +22,13 @@ class ActiveNetClient:
         self.session_cookie = config.settings.session_cookie
         self.csrf_token = config.settings.csrf_token
 
+        base_site_url = config.settings.base_site_url
+        self._origin = base_site_url
+        self._referer = (
+            f"{base_site_url}/activity/search"
+            "?onlineSiteId=0&activity_select_param=2&viewMode=list"
+        )
+
     def _get_headers(
         self,
         method: str = "GET",
@@ -36,8 +37,8 @@ class ActiveNetClient:
         headers = {
             "X-Requested-With": "XMLHttpRequest",
             "Accept": "*/*",
-            "Origin": _BASE_SITE_URL,
-            "Referer": _REFERER,
+            "Origin": self._origin,
+            "Referer": self._referer,
         }
         if self.session_cookie:
             headers["Cookie"] = self.session_cookie
@@ -53,14 +54,14 @@ class ActiveNetClient:
             pi = page_info or {
                 "order_by": "",
                 "page_number": 1,
-                "total_records_per_page": 20,
+                "total_records_per_page": config.settings.page_size,
             }
             headers["page_info"] = json.dumps(pi, separators=(",", ":"))
 
         return headers
 
     def _get_params(self, params: dict | None = None) -> dict:
-        base_params = {"locale": "en-US"}
+        base_params = {"locale": config.settings.locale}
         if params:
             base_params.update(params)
         return base_params

@@ -167,7 +167,7 @@
         <section class="detail-section">
             <h2>Description</h2>
             <div class="detail-description">
-                {{ detail.online_notes|safe }}
+                {{ detail.online_notes|sanitize_html }}
             </div>
         </section>
         {% endif %}

@@ -3,9 +3,11 @@ import logging
 import pathlib
 
 import fastapi
+import nh3
 from fastapi import staticfiles
 from fastapi import templating
 
+from app import config
 from app.routes import activities as activities_routes
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +25,13 @@ def _format_date(value: str) -> str:
         return value
 
 
+def _sanitize_html(value: str) -> str:
+    """Sanitize HTML, keeping only safe tags and attributes."""
+    if not value:
+        return ""
+    return nh3.clean(value)
+
+
 def create_app() -> fastapi.FastAPI:
     app = fastapi.FastAPI(title="Santa Monica Activities")
 
@@ -32,20 +41,12 @@ def create_app() -> fastapi.FastAPI:
 
     # Custom filters
     templates.env.filters["format_date"] = _format_date
-
-    # Add custom template function for pagination
-    def pagination_query(page: int) -> str:
-        """Build query string for pagination links, preserving current filters."""
-        # This will be called from within the request context
-        # We'll inject the params via the template context
-        return ""
-
-    templates.env.globals["pagination_query"] = pagination_query
+    templates.env.filters["sanitize_html"] = _sanitize_html
 
     app.state.templates = templates
 
     # Mount static files
-    static_dir = pathlib.Path(__file__).parent.parent / "static"
+    static_dir = pathlib.Path(__file__).parent / "static"
     app.mount(
         "/static", staticfiles.StaticFiles(directory=str(static_dir)), name="static"
     )
@@ -62,4 +63,9 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "app.main:app",
+        host=config.settings.host,
+        port=config.settings.port,
+        reload=True,
+    )

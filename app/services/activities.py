@@ -4,6 +4,7 @@ import logging
 import httpx
 
 from app import client as client_module
+from app import config
 from app.models import activity as activity_models
 from app.models import common as common_models
 
@@ -37,7 +38,7 @@ async def search(
     request_page_info = {
         "order_by": "",
         "page_number": page_number,
-        "total_records_per_page": 20,
+        "total_records_per_page": config.settings.page_size,
     }
 
     data = await api_client.post(
@@ -77,7 +78,7 @@ async def get_meeting_dates(
         body = data.get("body", {})
         meeting_data = body.get("meeting_and_registration_dates", {})
         if meeting_data:
-            logger.info(
+            logger.debug(
                 "meeting_and_registration_dates keys for %s: %s",
                 activity_id,
                 list(meeting_data.keys()),
@@ -136,7 +137,7 @@ async def get_activity_detail(
         body = data.get("body", {})
         detail_data = body.get("detail", {})
         if detail_data:
-            logger.info(
+            logger.debug(
                 "activity/detail keys for %s: %s",
                 activity_id,
                 list(detail_data.keys()),
@@ -165,7 +166,7 @@ async def get_activity_price(
         body = data.get("body", {})
         price_data = body.get("estimateprice", {})
         if price_data:
-            logger.info(
+            logger.debug(
                 "estimateprice keys for %s: %s",
                 activity_id,
                 list(price_data.keys()),
@@ -220,7 +221,7 @@ async def get_button_status(
         body = data.get("body", {})
         status_data = body.get("button_status", {})
         if status_data:
-            logger.info(
+            logger.debug(
                 "buttonstatus keys for %s: %s",
                 activity_id,
                 list(status_data.keys()),

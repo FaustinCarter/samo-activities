@@ -1,12 +1,12 @@
-"""Unit tests for calendar building functions in routes/activities.py."""
+"""Unit tests for calendar building functions in app/calendar.py."""
 
 import datetime
 
 
-from app.routes.activities import (
+from app.calendar import (
     build_calendar_data,
     build_query_string,
-    _activity_meeting_dates,
+    activity_meeting_dates,
 )
 from app.models.activity import (
     ActionLink,
@@ -102,7 +102,7 @@ class TestBuildQueryString:
 
 
 class TestActivityMeetingDates:
-    """Tests for the _activity_meeting_dates function."""
+    """Tests for the activity_meeting_dates function."""
 
     def test_with_valid_meeting_info(self):
         """Extract dates from meeting info patterns."""
@@ -123,7 +123,7 @@ class TestActivityMeetingDates:
                 )
             ],
         )
-        result = _activity_meeting_dates(activity, meeting_info)
+        result = activity_meeting_dates(activity, meeting_info)
         expected = {
             datetime.date(2026, 3, 16),
             datetime.date(2026, 3, 18),
@@ -142,7 +142,7 @@ class TestActivityMeetingDates:
             no_meeting_dates=True,
             activity_patterns=[],
         )
-        result = _activity_meeting_dates(activity, meeting_info)
+        result = activity_meeting_dates(activity, meeting_info)
         assert result == {datetime.date(2026, 3, 16)}
 
     def test_none_meeting_info(self):
@@ -152,7 +152,7 @@ class TestActivityMeetingDates:
             name="Test",
             date_range_start="2026-03-16",
         )
-        result = _activity_meeting_dates(activity, None)
+        result = activity_meeting_dates(activity, None)
         assert result == {datetime.date(2026, 3, 16)}
 
     def test_empty_patterns_fallback(self):
@@ -173,13 +173,13 @@ class TestActivityMeetingDates:
                 )
             ],
         )
-        result = _activity_meeting_dates(activity, meeting_info)
+        result = activity_meeting_dates(activity, meeting_info)
         assert result == {datetime.date(2026, 3, 16)}
 
     def test_no_start_date(self):
         """When activity has no start date and no patterns, return empty."""
         activity = ActivityItem(id=1, name="Test")
-        result = _activity_meeting_dates(activity, None)
+        result = activity_meeting_dates(activity, None)
         assert result == set()
 
 
