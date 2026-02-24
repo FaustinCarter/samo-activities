@@ -1,6 +1,5 @@
 """Tests for session middleware, the get_api_client dependency, and auth routes."""
 
-import pytest
 import respx
 from httpx import Response
 

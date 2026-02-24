@@ -220,7 +220,9 @@ def live_server(
     async def mock_get_meeting_dates_fn(api_client, activity_id, *args, **kwargs):
         return mock_meeting_dates
 
-    async def mock_get_meeting_dates_batch_fn(api_client, activity_ids, *args, **kwargs):
+    async def mock_get_meeting_dates_batch_fn(
+        api_client, activity_ids, *args, **kwargs
+    ):
         return {aid: mock_meeting_dates for aid in activity_ids}
 
     async def mock_get_activity_detail_fn(api_client, activity_id, *args, **kwargs):
