@@ -3,6 +3,7 @@
 import fastapi
 
 from app.client import ActiveNetClient
+from app.sessions import SessionManager
 
 
 async def session_middleware(
@@ -15,7 +16,7 @@ async def session_middleware(
     actual response object that will be sent to the browser, so the cookie is
     guaranteed to be delivered.
     """
-    session_manager = request.app.state.session_manager
+    session_manager: SessionManager = request.app.state.session_manager
     session_id = request.cookies.get("samo_session")
 
     client = session_manager.get_client(session_id) if session_id else None
