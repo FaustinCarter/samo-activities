@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — Santa Monica Activities{% endblock %}
+
+{% block content %}
+<section class="login-section">
+    <div class="login-card">
+        <h2>Sign In</h2>
+        <p class="login-subtitle">Log in with your ActiveNet account</p>
+
+        {% if error %}
+        <div class="login-error" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login" class="login-form">
+            <div class="login-field">
+                <label for="username">Email</label>
+                <input type="email" id="username" name="username" required
+                       autocomplete="email" placeholder="you@example.com">
+            </div>
+
+            <div class="login-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required
+                       autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary login-submit">Sign In</button>
+        </form>
+
+        <p class="login-note">
+            This signs you in to the Santa Monica Recreation (ActiveNet) system.
+        </p>
+    </div>
+</section>
+{% endblock %}

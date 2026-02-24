@@ -4,6 +4,8 @@ import typing
 import fastapi
 
 from app.calendar import build_calendar_data, build_query_string
+from app.client import ActiveNetClient
+from app.deps import get_api_client
 from app.models import activity as activity_models
 from app.services import activities as activities_service
 
@@ -13,6 +15,7 @@ router = fastapi.APIRouter()
 @router.get("/")
 async def browse_activities(
     request: fastapi.Request,
+    api_client: ActiveNetClient = fastapi.Depends(get_api_client),
     q: str = "",
     date_after: str = "",
     date_before: str = "",
@@ -32,8 +35,8 @@ async def browse_activities(
     )
 
     # Fetch filters and search results in parallel
-    filters_task = activities_service.get_filters()
-    search_task = activities_service.search(pattern, page_number=page)
+    filters_task = activities_service.get_filters(api_client)
+    search_task = activities_service.search(api_client, pattern, page_number=page)
 
     filters, (activities, page_info) = await asyncio.gather(filters_task, search_task)
 
@@ -49,15 +52,15 @@ async def browse_activities(
 
         if need_meeting_dates and need_prices:
             meeting_dates, prices = await asyncio.gather(
-                activities_service.get_meeting_dates_batch(activity_ids),
-                activities_service.get_prices_batch(activity_ids),
+                activities_service.get_meeting_dates_batch(api_client, activity_ids),
+                activities_service.get_prices_batch(api_client, activity_ids),
             )
         elif need_meeting_dates:
             meeting_dates = await activities_service.get_meeting_dates_batch(
-                activity_ids
+                api_client, activity_ids
             )
         elif need_prices:
-            prices = await activities_service.get_prices_batch(activity_ids)
+            prices = await activities_service.get_prices_batch(api_client, activity_ids)
 
     params = {
         "q": q,
@@ -82,6 +85,7 @@ async def browse_activities(
         request,
         "index.html",
         {
+            "api_client": api_client,
             "activities": activities,
             "meeting_dates": meeting_dates,
             "prices": prices,
@@ -99,12 +103,13 @@ async def browse_activities(
 async def activity_detail(
     request: fastapi.Request,
     activity_id: int,
+    api_client: ActiveNetClient = fastapi.Depends(get_api_client),
 ):
     """Display the full detail page for a single activity."""
-    detail_task = activities_service.get_activity_detail(activity_id)
-    meeting_task = activities_service.get_meeting_dates(activity_id)
-    price_task = activities_service.get_activity_price(activity_id)
-    button_task = activities_service.get_button_status(activity_id)
+    detail_task = activities_service.get_activity_detail(api_client, activity_id)
+    meeting_task = activities_service.get_meeting_dates(api_client, activity_id)
+    price_task = activities_service.get_activity_price(api_client, activity_id)
+    button_task = activities_service.get_button_status(api_client, activity_id)
 
     detail, meeting_dates, price, button_status = await asyncio.gather(
         detail_task, meeting_task, price_task, button_task
@@ -118,6 +123,7 @@ async def activity_detail(
         request,
         "activity_detail.html",
         {
+            "api_client": api_client,
             "detail": detail,
             "meeting_dates": meeting_dates,
             "price": price,

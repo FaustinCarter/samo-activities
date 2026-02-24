@@ -8,7 +8,12 @@ from fastapi import staticfiles
 from fastapi import templating
 
 from app import config
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from app.deps import session_middleware
 from app.routes import activities as activities_routes
+from app.routes import auth as auth_routes
+from app.sessions import SessionManager
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,6 +40,9 @@ def _sanitize_html(value: str) -> str:
 def create_app() -> fastapi.FastAPI:
     app = fastapi.FastAPI(title="Santa Monica Activities")
 
+    # Session manager — in-memory store of per-user ActiveNetClient instances
+    app.state.session_manager = SessionManager()
+
     # Setup templates
     templates_dir = pathlib.Path(__file__).parent / "templates"
     templates = templating.Jinja2Templates(directory=str(templates_dir))
@@ -51,7 +59,11 @@ def create_app() -> fastapi.FastAPI:
         "/static", staticfiles.StaticFiles(directory=str(static_dir)), name="static"
     )
 
+    # Session middleware — resolves/creates sessions and sets the cookie
+    app.add_middleware(BaseHTTPMiddleware, dispatch=session_middleware)
+
     # Include routes
+    app.include_router(auth_routes.router)
     app.include_router(activities_routes.router)
 
     return app

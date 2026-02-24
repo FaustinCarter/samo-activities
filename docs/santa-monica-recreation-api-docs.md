@@ -50,10 +50,11 @@ Every response follows this structure:
 }
 ```
 
-| Response Code | Meaning          |
-|--------------|------------------|
-| `"0000"`     | Success          |
-| `"0001"`     | No results found |
+| Response Code | Meaning            |
+|--------------|---------------------|
+| `"0000"`     | Success             |
+| `"0001"`     | No results found    |
+| `"0021"`     | User not logged in  |
 
 ---
 
@@ -115,6 +116,123 @@ Returns the authenticated user's profile summary and session token.
   }
 }
 ```
+
+---
+
+### 1.3 Sign In
+
+Authenticates a user and establishes a logged-in session.  On success the
+response sets new session cookies (`JSESSIONID`,
+`santamonicarecreation_LOGGED_JSESSIONID`, `santamonicarecreation_JSESSIONID`)
+and returns JWT access/refresh tokens plus basic customer info.
+
+| | |
+|---|---|
+| **Endpoint** | `/rest/user/signin` |
+| **Method** | `POST` |
+
+**Request body** (`application/json`):
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `login_name` | string | Yes | Email address or login name |
+| `password` | string | Yes | Plaintext password |
+| `signin_source_app` | string | Yes | Always `"0"` |
+| `custom_amount` | string | No | `"False"` |
+| `from_original_cui` | string | No | `"true"` |
+| `onlineSiteId` | string | No | `"0"` |
+| `override_partial_error` | string | No | `"False"` |
+| `params` | string\|null | No | Base64-encoded redirect URL, or `null` |
+| `ak_properties` | null | No | Always `null` |
+
+**Example request body:**
+
+```json
+{
+  "login_name": "user@example.com",
+  "password": "••••••••",
+  "signin_source_app": "0",
+  "custom_amount": "False",
+  "from_original_cui": "true",
+  "onlineSiteId": "0",
+  "override_partial_error": "False",
+  "params": null,
+  "ak_properties": null
+}
+```
+
+**Response `body`** (on success — `response_code: "0000"`):
+
+```json
+{
+  "result": {
+    "success": true,
+    "message": "",
+    "error_type": -1,
+    "redirect_url": null,
+    "activity_items": [],
+    "security_sign_token": null,
+    "public_customer_id": null,
+    "sign_in_token_id": null,
+    "customer": {
+      "customer_title": "",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "middle_name": "",
+      "email": "user@example.com",
+      "gender": "Female",
+      "birth_date": "1990-01-15 00:00:00",
+      "age_category": "--",
+      "customer_id": 123456,
+      "disabled": false,
+      "photo_key": "ABCDEF1234567890",
+      "disabled_reasons": [],
+      "redirect_url": null
+    },
+    "campaign_id": -1,
+    "access_token": "<JWT — ~24 h expiry>",
+    "refresh_token": "<JWT — ~60 day expiry>",
+    "ak_update_succeed": false,
+    "enable_gpap": true,
+    "need_verify_recaptcha": false
+  }
+}
+```
+
+**Important response cookies** (set via `Set-Cookie` headers):
+
+| Cookie | Purpose |
+|--------|---------|
+| `santamonicarecreation_LOGGED_JSESSIONID` | Logged-in session identifier |
+| `santamonicarecreation_JSESSIONID` | Session identifier |
+| `JSESSIONID` | Server session identifier |
+
+These cookies must be included in subsequent API requests to maintain the
+authenticated session.
+
+---
+
+### 1.4 CSRF Token Bootstrap
+
+Before making any POST request (including sign-in), a CSRF token must be
+obtained.  The token is **not** available from a REST endpoint — it is embedded
+in the HTML of the sign-in page.
+
+**Flow:**
+
+1. `GET https://anc.apm.activecommunities.com/santamonicarecreation/signin?onlineSiteId=0&from_original_cui=true`
+2. The server responds with a redirect chain (one or more `302` responses).
+   Follow all redirects.
+3. The final `200 OK` response is an HTML page containing an inline `<script>`
+   tag with:
+   ```js
+   window.__csrfToken = "787495e9-ce12-4c72-a8fe-3bb2510d66aa";
+   ```
+4. Extract the UUID value.  This is the CSRF token required in the
+   `X-CSRF-Token` header for all subsequent POST requests.
+
+The response chain also sets initial session cookies needed for all API calls,
+even unauthenticated ones (anonymous browsing).
 
 ---
 

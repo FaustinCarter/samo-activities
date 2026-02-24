@@ -3,7 +3,7 @@
 import socket
 import threading
 import time
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import uvicorn
@@ -210,35 +210,39 @@ def live_server(
     Scoped to module to avoid conflicts with other test modules.
     """
 
-    # Create mock functions
-    async def mock_get_filters_fn(*args, **kwargs):
+    # Create mock functions — each takes api_client as first arg.
+    async def mock_get_filters_fn(api_client, *args, **kwargs):
         return mock_filters
 
-    async def mock_search_fn(*args, **kwargs):
+    async def mock_search_fn(api_client, *args, **kwargs):
         return (mock_activities, mock_page_info)
 
-    async def mock_get_meeting_dates_fn(activity_id, *args, **kwargs):
+    async def mock_get_meeting_dates_fn(api_client, activity_id, *args, **kwargs):
         return mock_meeting_dates
 
-    async def mock_get_meeting_dates_batch_fn(activity_ids, *args, **kwargs):
+    async def mock_get_meeting_dates_batch_fn(api_client, activity_ids, *args, **kwargs):
         return {aid: mock_meeting_dates for aid in activity_ids}
 
-    async def mock_get_activity_detail_fn(activity_id, *args, **kwargs):
+    async def mock_get_activity_detail_fn(api_client, activity_id, *args, **kwargs):
         if activity_id == 12345:
             return mock_detail
         return None
 
-    async def mock_get_activity_price_fn(activity_id, *args, **kwargs):
+    async def mock_get_activity_price_fn(api_client, activity_id, *args, **kwargs):
         return mock_price
 
-    async def mock_get_prices_batch_fn(activity_ids, *args, **kwargs):
+    async def mock_get_prices_batch_fn(api_client, activity_ids, *args, **kwargs):
         return {aid: mock_price for aid in activity_ids}
 
-    async def mock_get_button_status_fn(activity_id, *args, **kwargs):
+    async def mock_get_button_status_fn(api_client, activity_id, *args, **kwargs):
         return mock_button_status
 
     # Patch at the routes module level where these functions are imported
     patches = [
+        patch(
+            "app.client.ActiveNetClient.bootstrap",
+            new_callable=AsyncMock,
+        ),
         patch(
             "app.routes.activities.activities_service.get_filters", mock_get_filters_fn
         ),

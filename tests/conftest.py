@@ -1,5 +1,7 @@
 """Shared test fixtures for the Santa Monica Activities app."""
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -30,8 +32,17 @@ def app():
 
 @pytest.fixture
 def client(app):
-    """Create a test client for the FastAPI app."""
-    return TestClient(app)
+    """Create a test client for the FastAPI app.
+
+    ``ActiveNetClient.bootstrap`` is patched to a no-op so the session
+    middleware can create anonymous sessions without hitting the real
+    ActiveNet sign-in page.
+    """
+    with patch(
+        "app.client.ActiveNetClient.bootstrap",
+        new_callable=AsyncMock,
+    ):
+        yield TestClient(app)
 
 
 @pytest.fixture

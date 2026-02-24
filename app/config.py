@@ -3,8 +3,6 @@ import pydantic_settings
 
 class Settings(pydantic_settings.BaseSettings):
     base_url: str = "https://anc.apm.activecommunities.com/santamonicarecreation/rest"
-    session_cookie: str = ""
-    csrf_token: str = ""
     locale: str = "en-US"
     page_size: int = 20
     host: str = "0.0.0.0"

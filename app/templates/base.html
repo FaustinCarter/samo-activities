@@ -8,8 +8,16 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="container">
+        <div class="container header-row">
             <h1><a href="/">Santa Monica Activities</a></h1>
+            <nav class="header-auth">
+                {% if api_client is defined and api_client.is_authenticated %}
+                <span class="header-user">{{ api_client.user_info.first_name }}</span>
+                <a href="/logout" class="header-auth-link">Log Out</a>
+                {% else %}
+                <a href="/login" class="header-auth-link">Log In</a>
+                {% endif %}
+            </nav>
         </div>
     </header>
     

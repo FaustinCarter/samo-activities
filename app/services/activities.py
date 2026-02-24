@@ -3,8 +3,8 @@ import logging
 
 import httpx
 
-from app import client as client_module
 from app import config
+from app.client import ActiveNetClient
 from app.models import activity as activity_models
 from app.models import common as common_models
 
@@ -12,28 +12,22 @@ logger = logging.getLogger(__name__)
 
 
 async def get_filters(
-    api_client: client_module.ActiveNetClient | None = None,
+    api_client: ActiveNetClient,
     http_client: httpx.AsyncClient | None = None,
 ) -> activity_models.ActivityFilterOptions:
     """Fetch filter options for the activity search UI."""
-    if api_client is None:
-        api_client = client_module.api_client
-
     data = await api_client.get("/activities/filters", client=http_client)
     body = data.get("body", {})
     return activity_models.ActivityFilterOptions.model_validate(body)
 
 
 async def search(
+    api_client: ActiveNetClient,
     pattern: activity_models.ActivitySearchPattern,
     page_number: int = 1,
-    api_client: client_module.ActiveNetClient | None = None,
     http_client: httpx.AsyncClient | None = None,
 ) -> tuple[list[activity_models.ActivityItem], common_models.PageInfo]:
     """Search for activities with the given filters."""
-    if api_client is None:
-        api_client = client_module.api_client
-
     request = activity_models.ActivitySearchRequest(activity_search_pattern=pattern)
     request_page_info = {
         "order_by": "",
@@ -62,14 +56,11 @@ async def search(
 
 
 async def get_meeting_dates(
+    api_client: ActiveNetClient,
     activity_id: int,
-    api_client: client_module.ActiveNetClient | None = None,
     http_client: httpx.AsyncClient | None = None,
 ) -> activity_models.MeetingAndRegistrationDates | None:
     """Fetch meeting dates for a single activity."""
-    if api_client is None:
-        api_client = client_module.api_client
-
     try:
         data = await api_client.get(
             f"/activity/detail/meetingandregistrationdates/{activity_id}",
@@ -95,19 +86,16 @@ async def get_meeting_dates(
 
 
 async def get_meeting_dates_batch(
+    api_client: ActiveNetClient,
     activity_ids: list[int],
-    api_client: client_module.ActiveNetClient | None = None,
 ) -> dict[int, activity_models.MeetingAndRegistrationDates]:
     """Fetch meeting dates for multiple activities in parallel."""
     if not activity_ids:
         return {}
 
-    if api_client is None:
-        api_client = client_module.api_client
-
     async with httpx.AsyncClient() as http_client:
         tasks = [
-            get_meeting_dates(aid, api_client=api_client, http_client=http_client)
+            get_meeting_dates(api_client, aid, http_client=http_client)
             for aid in activity_ids
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -121,14 +109,11 @@ async def get_meeting_dates_batch(
 
 
 async def get_activity_detail(
+    api_client: ActiveNetClient,
     activity_id: int,
-    api_client: client_module.ActiveNetClient | None = None,
     http_client: httpx.AsyncClient | None = None,
 ) -> activity_models.ActivityDetail | None:
     """Fetch full detail for a single activity."""
-    if api_client is None:
-        api_client = client_module.api_client
-
     try:
         data = await api_client.get(
             f"/activity/detail/{activity_id}",
@@ -150,14 +135,11 @@ async def get_activity_detail(
 
 
 async def get_activity_price(
+    api_client: ActiveNetClient,
     activity_id: int,
-    api_client: client_module.ActiveNetClient | None = None,
     http_client: httpx.AsyncClient | None = None,
 ) -> activity_models.EstimatedPrice | None:
     """Fetch pricing info for a single activity."""
-    if api_client is None:
-        api_client = client_module.api_client
-
     try:
         data = await api_client.get(
             f"/activity/detail/estimateprice/{activity_id}",
@@ -179,19 +161,16 @@ async def get_activity_price(
 
 
 async def get_prices_batch(
+    api_client: ActiveNetClient,
     activity_ids: list[int],
-    api_client: client_module.ActiveNetClient | None = None,
 ) -> dict[int, activity_models.EstimatedPrice]:
     """Fetch prices for multiple activities in parallel."""
     if not activity_ids:
         return {}
 
-    if api_client is None:
-        api_client = client_module.api_client
-
     async with httpx.AsyncClient() as http_client:
         tasks = [
-            get_activity_price(aid, api_client=api_client, http_client=http_client)
+            get_activity_price(api_client, aid, http_client=http_client)
             for aid in activity_ids
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -205,14 +184,11 @@ async def get_prices_batch(
 
 
 async def get_button_status(
+    api_client: ActiveNetClient,
     activity_id: int,
-    api_client: client_module.ActiveNetClient | None = None,
     http_client: httpx.AsyncClient | None = None,
 ) -> activity_models.ButtonStatus | None:
     """Fetch the current enrollment button status for an activity."""
-    if api_client is None:
-        api_client = client_module.api_client
-
     try:
         data = await api_client.get(
             f"/activity/detail/buttonstatus/{activity_id}",
