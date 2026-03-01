@@ -22,6 +22,8 @@ class ActivityItem(pydantic.BaseModel):
     fee: ActionLink | None = None  # .href links to fee details page
     action_link: ActionLink | None = None
     detail_url: str = ""
+    show_wish_list: bool = False  # True when user is logged in
+    wish_list_id: int = 0  # 0 = not on wishlist; >0 = wishlist entry ID
 
 
 class ActivityListBody(pydantic.BaseModel):
@@ -155,6 +157,8 @@ class ActivityDetail(pydantic.BaseModel):
     facilities: list = pydantic.Field(default_factory=list)
     instructors: list[Instructor] = pydantic.Field(default_factory=list)
     online_notes: str = ""
+    show_wish_list: bool = False
+    wish_list_id: int = 0
 
 
 # --- Pricing from /rest/activity/detail/estimateprice/{id} ---

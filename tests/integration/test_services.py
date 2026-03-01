@@ -279,6 +279,140 @@ class TestGetButtonStatus:
         assert result.action_link.label == "Enroll Now"
 
 
+class TestAddToWishlist:
+    """Tests for the add_to_wishlist service function."""
+
+    @respx.mock
+    async def test_returns_wish_list_id(self, api_client):
+        """add_to_wishlist returns the new wish_list_id."""
+        respx.post(f"{settings.base_url}/wishlist").mock(
+            return_value=Response(
+                200,
+                json={
+                    "headers": {"response_code": "0000"},
+                    "body": {"wish_list_id": 789},
+                },
+            )
+        )
+
+        result = await activities_service.add_to_wishlist(api_client, 12345)
+
+        assert result == "789"
+
+    @respx.mock
+    async def test_sends_activity_id_in_body(self, api_client):
+        """add_to_wishlist posts the activity_id in the request body."""
+        route = respx.post(f"{settings.base_url}/wishlist").mock(
+            return_value=Response(
+                200,
+                json={
+                    "headers": {"response_code": "0000"},
+                    "body": {"wish_list_id": 1},
+                },
+            )
+        )
+
+        await activities_service.add_to_wishlist(api_client, 12345)
+
+        assert route.called
+        import json
+
+        body = json.loads(route.calls[0].request.content)
+        assert body["activity_id"] == 12345
+
+    @respx.mock
+    async def test_returns_none_on_error(self, api_client):
+        """add_to_wishlist returns None on API error."""
+        respx.post(f"{settings.base_url}/wishlist").mock(return_value=Response(500))
+
+        result = await activities_service.add_to_wishlist(api_client, 12345)
+
+        assert result is None
+
+
+class TestRemoveFromWishlist:
+    """Tests for the remove_from_wishlist service function."""
+
+    @respx.mock
+    async def test_returns_true_on_success(self, api_client):
+        """remove_from_wishlist returns True on success."""
+        respx.delete(f"{settings.base_url}/wishlist/789").mock(
+            return_value=Response(
+                200,
+                json={
+                    "headers": {"response_code": "0000"},
+                    "body": {},
+                },
+            )
+        )
+
+        result = await activities_service.remove_from_wishlist(api_client, 789)
+
+        assert result is True
+
+    @respx.mock
+    async def test_returns_false_on_error(self, api_client):
+        """remove_from_wishlist returns False on API error."""
+        respx.delete(f"{settings.base_url}/wishlist/789").mock(
+            return_value=Response(500)
+        )
+
+        result = await activities_service.remove_from_wishlist(api_client, 789)
+
+        assert result is False
+
+
+class TestGetWishlist:
+    """Tests for the get_wishlist service function."""
+
+    @respx.mock
+    async def test_returns_activity_items(self, api_client):
+        """get_wishlist returns a list of ActivityItem objects."""
+        wishlist_response = {
+            "headers": {"response_code": "0000"},
+            "body": {
+                "wishlist_items": [
+                    {"id": 111, "name": "Wishlisted Activity", "wish_list_id": 50},
+                    {"id": 222, "name": "Another Fav", "wish_list_id": 51},
+                ]
+            },
+        }
+        respx.get(f"{settings.base_url}/wishlist").mock(
+            return_value=Response(200, json=wishlist_response)
+        )
+
+        result = await activities_service.get_wishlist(api_client)
+
+        assert len(result) == 2
+        assert isinstance(result[0], ActivityItem)
+        assert result[0].name == "Wishlisted Activity"
+        assert result[0].wish_list_id == 50
+
+    @respx.mock
+    async def test_returns_empty_list_on_error(self, api_client):
+        """get_wishlist returns empty list on API error."""
+        respx.get(f"{settings.base_url}/wishlist").mock(return_value=Response(500))
+
+        result = await activities_service.get_wishlist(api_client)
+
+        assert result == []
+
+    @respx.mock
+    async def test_returns_empty_list_when_no_items(self, api_client):
+        """get_wishlist returns empty list when wishlist is empty."""
+        empty_response = {
+            "headers": {"response_code": "0000"},
+            "body": {"wishlist_items": []},
+        }
+        respx.get(f"{settings.base_url}/wishlist").mock(
+            return_value=Response(200, json=empty_response)
+        )
+
+        result = await activities_service.get_wishlist(api_client)
+
+        assert result == []
+
+
 class TestActiveNetClient:
     """Tests for the ActiveNetClient class."""
 
@@ -311,6 +445,39 @@ class TestActiveNetClient:
         result = await client.post("/test", json_body={"key": "value"})
 
         assert result["body"]["data"] == "test"
+
+    @respx.mock
+    async def test_delete_request(self):
+        """Client makes DELETE requests correctly."""
+        client = ActiveNetClient()
+        respx.delete(f"{settings.base_url}/test").mock(
+            return_value=Response(
+                200,
+                json={"headers": {"response_code": "0000"}, "body": {"data": "gone"}},
+            )
+        )
+
+        result = await client.delete("/test")
+
+        assert result["body"]["data"] == "gone"
+
+    @respx.mock
+    async def test_delete_includes_csrf_token(self):
+        """DELETE requests include CSRF token in headers."""
+        client = ActiveNetClient()
+        client.csrf_token = "test-csrf-token"
+        route = respx.delete(f"{settings.base_url}/test").mock(
+            return_value=Response(
+                200,
+                json={"headers": {"response_code": "0000"}, "body": {}},
+            )
+        )
+
+        await client.delete("/test")
+
+        assert route.called
+        request = route.calls[0].request
+        assert request.headers.get("x-csrf-token") == "test-csrf-token"
 
     @respx.mock
     async def test_raises_api_error_on_bad_response_code(self):

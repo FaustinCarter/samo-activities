@@ -40,7 +40,7 @@ docs/
 ## Commands
 ```bash
 uv run python -m app.main          # Run dev server (localhost:8000)
-uv run pytest                      # All tests
+uv run pytest                      # All tests (e2e must run last — see note)
 uv run pytest tests/unit           # Unit tests only
 uv run pytest tests/integration    # Integration tests (mocked HTTP)
 uv run pytest tests/e2e            # E2E tests (Playwright)
@@ -48,6 +48,9 @@ uv run ruff check app/             # Lint
 uv run ruff format app/            # Format
 uv run mypy app/                   # Type check
 ```
+
+### Test ordering: e2e must run last
+Playwright's sync API leaves residual event loop state on the main thread. If Playwright e2e tests run *before* pytest-asyncio async tests (services, sessions), the async tests fail with `Runner.run() cannot be called from a running event loop`. Two safeguards enforce this: `testpaths` in `pyproject.toml` lists directories in the correct order, and a `pytest_collection_modifyitems` hook in `tests/conftest.py` sorts e2e tests to the end. Do not change `testpaths` back to `["tests"]` or remove the hook.
 
 ## Key Architecture
 - **Async throughout**: All routes and services use async/await. Routes use `asyncio.gather()` for parallel data fetching.

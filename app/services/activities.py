@@ -183,6 +183,52 @@ async def get_prices_batch(
     return prices
 
 
+async def add_to_wishlist(
+    api_client: ActiveNetClient,
+    activity_id: int,
+) -> str | None:
+    """Add an activity to the user's wishlist. Returns the wish_list_id."""
+    try:
+        data = await api_client.post(
+            "/wishlist",
+            json_body={"activity_id": activity_id},
+        )
+        body = data.get("body", {})
+        return str(body.get("wish_list_id", ""))
+    except Exception:
+        logger.exception("Failed to add activity %s to wishlist", activity_id)
+    return None
+
+
+async def remove_from_wishlist(
+    api_client: ActiveNetClient,
+    wish_list_id: int,
+) -> bool:
+    """Remove an item from the user's wishlist. Returns True on success."""
+    try:
+        await api_client.delete(f"/wishlist/{wish_list_id}")
+        return True
+    except Exception:
+        logger.exception("Failed to remove wishlist item %s", wish_list_id)
+    return False
+
+
+async def get_wishlist(
+    api_client: ActiveNetClient,
+) -> list[activity_models.ActivityItem]:
+    """Fetch the user's wishlist items."""
+    try:
+        data = await api_client.get("/wishlist")
+        body = data.get("body", {})
+        items_data = body.get("wishlist_items", [])
+        return [
+            activity_models.ActivityItem.model_validate(item) for item in items_data
+        ]
+    except Exception:
+        logger.exception("Failed to fetch wishlist")
+    return []
+
+
 async def get_button_status(
     api_client: ActiveNetClient,
     activity_id: int,

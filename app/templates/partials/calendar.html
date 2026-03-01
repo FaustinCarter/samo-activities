@@ -36,7 +36,7 @@
                     <li>
                         <button class="cal-event-pill"
                                 style="background-color: {{ event.color }};"
-                                data-event="{{ {
+                                {% set event_data = {
                                     'id': event.id,
                                     'name': event.name,
                                     'location': event.location,
@@ -49,9 +49,13 @@
                                     'starting_time': event.starting_time,
                                     'ending_time': event.ending_time,
                                     'number': event.number
-                                } | tojson | forceescape }}"
+                                } %}
+                                {% if api_client.is_authenticated %}
+                                    {% set _ = event_data.update({'wish_list_id': event.wish_list_id}) %}
+                                {% endif %}
+                                data-event="{{ event_data | tojson | forceescape }}"
                                 aria-label="{{ event.name }}{% if event.starting_time %}, {{ event.starting_time }}{% if event.ending_time %} – {{ event.ending_time }}{% endif %}{% endif %}">
-                            <span class="cal-event-name">{{ event.name }}</span>
+                            <span class="cal-event-name">{% if api_client.is_authenticated and event.wish_list_id %}&hearts; {% endif %}{{ event.name }}</span>
                             {% if event.starting_time %}
                             <span class="cal-event-time">{{ event.starting_time }}{% if event.ending_time %}&ndash;{{ event.ending_time }}{% endif %}</span>
                             {% endif %}

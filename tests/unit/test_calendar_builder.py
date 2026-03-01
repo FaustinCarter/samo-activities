@@ -73,6 +73,18 @@ class TestBuildQueryString:
         result = build_query_string(params, 1)
         assert "view=calendar" in result
 
+    def test_with_wishlist_only(self):
+        """Include wishlist_only flag."""
+        params = {"wishlist_only": True}
+        result = build_query_string(params, 1)
+        assert "wishlist_only=true" in result
+
+    def test_wishlist_only_false_not_included(self):
+        """wishlist_only=False is not included."""
+        params = {"wishlist_only": False}
+        result = build_query_string(params, 1)
+        assert "wishlist_only" not in result
+
     def test_card_view_not_included(self):
         """view=card (default) is not included."""
         params = {"view": "card"}
@@ -350,6 +362,81 @@ class TestBuildCalendarData:
         assert event["starting_time"] == "09:00"
         assert event["ending_time"] == "10:00"
         assert "color" in event  # Color assigned from PILL_COLORS
+
+    def test_event_contains_wish_list_id(self):
+        """Event dicts include the wish_list_id from the activity."""
+        activities = [
+            ActivityItem(
+                id=1,
+                name="Wishlisted Class",
+                date_range_start="2026-03-16",
+                date_range_end="2026-03-16",
+                wish_list_id=42,
+            )
+        ]
+        meeting_dates = {
+            1: MeetingAndRegistrationDates(
+                activity_id=1,
+                activity_patterns=[
+                    ActivityPattern(
+                        beginning_date="2026-03-16",
+                        ending_date="2026-03-16",
+                        pattern_dates=[PatternDate(weekdays="Mon")],
+                    )
+                ],
+            )
+        }
+        result = build_calendar_data(activities, meeting_dates)
+
+        march = result[0]
+        event = None
+        for week in march["weeks"]:
+            for day in week:
+                if day.get("events"):
+                    event = day["events"][0]
+                    break
+            if event:
+                break
+
+        assert event is not None
+        assert event["wish_list_id"] == 42
+
+    def test_event_wish_list_id_defaults_to_zero(self):
+        """Event wish_list_id is 0 when activity is not wishlisted."""
+        activities = [
+            ActivityItem(
+                id=1,
+                name="Not Wishlisted",
+                date_range_start="2026-03-16",
+                date_range_end="2026-03-16",
+            )
+        ]
+        meeting_dates = {
+            1: MeetingAndRegistrationDates(
+                activity_id=1,
+                activity_patterns=[
+                    ActivityPattern(
+                        beginning_date="2026-03-16",
+                        ending_date="2026-03-16",
+                        pattern_dates=[PatternDate(weekdays="Mon")],
+                    )
+                ],
+            )
+        }
+        result = build_calendar_data(activities, meeting_dates)
+
+        march = result[0]
+        event = None
+        for week in march["weeks"]:
+            for day in week:
+                if day.get("events"):
+                    event = day["events"][0]
+                    break
+            if event:
+                break
+
+        assert event is not None
+        assert event["wish_list_id"] == 0
 
     def test_multiple_activities_get_different_colors(self):
         """Different activities get assigned different colors."""

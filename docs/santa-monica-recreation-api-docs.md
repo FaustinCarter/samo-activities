@@ -904,6 +904,29 @@ Returns the user's current wishlist items.
 
 ---
 
+### 5.3 Remove from Wishlist
+
+Removes an item from the user's wishlist.
+
+| | |
+|---|---|
+| **Endpoint** | `/rest/wishlist/{wish_list_id}` |
+| **Method** | `DELETE` |
+
+**Path Parameters:**
+
+| Parameter | Description |
+|---|---|
+| `wish_list_id` | The wishlist entry ID (returned by Add to Wishlist or present on wishlist items) |
+
+**Response `body`:**
+
+```json
+{}
+```
+
+---
+
 ## 6 — Activity Enrollment Flow
 
 The enrollment process is a multi-step sequence. The `reno` (registration enrollment number) returned from step 1 is used as a path parameter in subsequent calls.
@@ -1647,17 +1670,18 @@ Returns event types available on the landing page. May return `0001` (no results
 | 14 | GET | `/rest/activity/detail/estimateprice/{activity_id}` | [4.6](#46-get-estimated-price) |
 | 15 | POST | `/rest/wishlist` | [5.1](#51-add-to-wishlist) |
 | 16 | GET | `/rest/wishlist` | [5.2](#52-get-wishlist) |
-| 17 | POST | `/rest/activity/enrollment` | [6.1](#61-initialize-enrollment) |
-| 18 | POST | `/rest/activity/enrollment/participant` | [6.2](#62-select-participant) |
-| 19 | GET | `/rest/activity/enrollment/{reno}/merchandises` | [6.3](#63-get-enrollment-merchandises) |
-| 20 | GET | `/rest/activity/enrollment/{reno}/donation` | [6.4](#64-get-enrollment-donations) |
-| 21 | GET | `/rest/activity/enrollment/{reno}/waivers` | [6.5](#65-get-enrollment-waivers) |
-| 22 | GET | `/rest/activity/enrollment/{reno}/pickups/{customer_id}` | [6.6](#66-get-authorized-pickups) |
-| 23 | GET | `/rest/activity/enrollment/{reno}/customquestions` | [6.7](#67-get-custom-questions) |
-| 24 | GET | `/rest/activity/enrollment/{reno}/fees/addition` | [6.8](#68-get-fee-additions) |
-| 25 | POST | `/rest/activity/enrollment/addtocart` | [6.9](#69-add-to-cart) |
-| 26 | GET | `/rest/preparation` | [7.1](#71-cart-preparation) |
-| 27 | GET | `/rest/transaction` | [7.2](#72-get-transaction-details) |
+| 17 | DELETE | `/rest/wishlist/{wish_list_id}` | [5.3](#53-remove-from-wishlist) |
+| 18 | POST | `/rest/activity/enrollment` | [6.1](#61-initialize-enrollment) |
+| 19 | POST | `/rest/activity/enrollment/participant` | [6.2](#62-select-participant) |
+| 20 | GET | `/rest/activity/enrollment/{reno}/merchandises` | [6.3](#63-get-enrollment-merchandises) |
+| 21 | GET | `/rest/activity/enrollment/{reno}/donation` | [6.4](#64-get-enrollment-donations) |
+| 22 | GET | `/rest/activity/enrollment/{reno}/waivers` | [6.5](#65-get-enrollment-waivers) |
+| 23 | GET | `/rest/activity/enrollment/{reno}/pickups/{customer_id}` | [6.6](#66-get-authorized-pickups) |
+| 24 | GET | `/rest/activity/enrollment/{reno}/customquestions` | [6.7](#67-get-custom-questions) |
+| 25 | GET | `/rest/activity/enrollment/{reno}/fees/addition` | [6.8](#68-get-fee-additions) |
+| 26 | POST | `/rest/activity/enrollment/addtocart` | [6.9](#69-add-to-cart) |
+| 27 | GET | `/rest/preparation` | [7.1](#71-cart-preparation) |
+| 28 | GET | `/rest/transaction` | [7.2](#72-get-transaction-details) |
 | 28 | GET | `/rest/order/summary` | [7.3](#73-get-order-summary) |
 | 29 | GET | `/rest/waiver` | [7.4](#74-get-cart-waivers) |
 | 30 | GET | `/rest/coupons` | [7.5](#75-get-coupons) |

@@ -2,11 +2,13 @@ import asyncio
 import typing
 
 import fastapi
+import nh3
 
 from app.calendar import build_calendar_data, build_query_string
 from app.client import ActiveNetClient
 from app.deps import get_api_client
 from app.models import activity as activity_models
+from app.models import common as common_models
 from app.services import activities as activities_service
 
 router = fastapi.APIRouter()
@@ -22,23 +24,38 @@ async def browse_activities(
     category_ids: typing.Annotated[list[int] | None, fastapi.Query()] = None,
     center_ids: typing.Annotated[list[int] | None, fastapi.Query()] = None,
     show_full_details: bool = False,
+    wishlist_only: bool = False,
     view: str = "card",
     page: int = 1,
 ):
     """Browse and search activities with filters."""
-    pattern = activity_models.ActivitySearchPattern(
-        activity_keyword=q,
-        date_after=date_after,
-        date_before=date_before,
-        activity_category_ids=category_ids or [],
-        center_ids=center_ids or [],
-    )
+    if wishlist_only and api_client.is_authenticated:
+        filters_task = activities_service.get_filters(api_client)
+        wishlist_task = activities_service.get_wishlist(api_client)
+        filters, activities = await asyncio.gather(filters_task, wishlist_task)
+        page_info = common_models.PageInfo(
+            total_records=len(activities),
+            total_page=1,
+            page_number=1,
+            total_records_per_page=len(activities) or 20,
+        )
+    else:
+        wishlist_only = False
+        pattern = activity_models.ActivitySearchPattern(
+            activity_keyword=q,
+            date_after=date_after,
+            date_before=date_before,
+            activity_category_ids=category_ids or [],
+            center_ids=center_ids or [],
+        )
 
-    # Fetch filters and search results in parallel
-    filters_task = activities_service.get_filters(api_client)
-    search_task = activities_service.search(api_client, pattern, page_number=page)
+        # Fetch filters and search results in parallel
+        filters_task = activities_service.get_filters(api_client)
+        search_task = activities_service.search(api_client, pattern, page_number=page)
 
-    filters, (activities, page_info) = await asyncio.gather(filters_task, search_task)
+        filters, (activities, page_info) = await asyncio.gather(
+            filters_task, search_task
+        )
 
     # Meeting dates are needed for calendar view (to expand patterns to dates)
     # and optionally for card view when show_full_details is on.
@@ -69,6 +86,7 @@ async def browse_activities(
         "category_ids": category_ids or [],
         "center_ids": center_ids or [],
         "show_full_details": show_full_details,
+        "wishlist_only": wishlist_only,
         "view": view,
     }
 
@@ -130,3 +148,33 @@ async def activity_detail(
             "button_status": button_status,
         },
     )
+
+
+@router.post("/api/wishlist/{activity_id}")
+async def api_add_to_wishlist(
+    activity_id: int,
+    api_client: ActiveNetClient = fastapi.Depends(get_api_client),
+):
+    """Add an activity to the wishlist (AJAX endpoint)."""
+    if not api_client.is_authenticated:
+        raise fastapi.HTTPException(status_code=401, detail="Login required")
+    wish_list_id = await activities_service.add_to_wishlist(api_client, activity_id)
+    if wish_list_id is None:
+        raise fastapi.HTTPException(status_code=500, detail="Failed to add to wishlist")
+    return {"wish_list_id": wish_list_id}
+
+
+@router.delete("/api/wishlist/{wish_list_id}")
+async def api_remove_from_wishlist(
+    wish_list_id: int,
+    api_client: ActiveNetClient = fastapi.Depends(get_api_client),
+):
+    """Remove an item from the wishlist (AJAX endpoint)."""
+    if not api_client.is_authenticated:
+        raise fastapi.HTTPException(status_code=401, detail="Login required")
+    success = await activities_service.remove_from_wishlist(api_client, wish_list_id)
+    if not success:
+        raise fastapi.HTTPException(
+            status_code=500, detail="Failed to remove from wishlist"
+        )
+    return {"success": True}

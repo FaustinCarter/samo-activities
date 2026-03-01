@@ -24,6 +24,17 @@ from app.models.activity import (
 from app.models.common import PageInfo
 
 
+def pytest_collection_modifyitems(items: list) -> None:
+    """Sort e2e tests to run last.
+
+    Playwright's sync API manages its own event loop internally.  If Playwright
+    tests run *before* pytest-asyncio async tests, the leftover loop state on
+    the main thread causes ``Runner.run() cannot be called from a running event
+    loop`` errors.  Sorting e2e tests to the end avoids this.
+    """
+    items.sort(key=lambda item: "/e2e/" in str(item.fspath))
+
+
 @pytest.fixture
 def app():
     """Create a fresh FastAPI application for testing."""

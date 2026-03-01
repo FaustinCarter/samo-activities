@@ -51,6 +51,18 @@ class TestActivityItem:
         assert activity.total_open == 5
         assert activity.location.label == "Pool"
 
+    def test_wishlist_fields_default(self):
+        """Wishlist fields default to not-wishlisted state."""
+        activity = ActivityItem(id=123)
+        assert activity.show_wish_list is False
+        assert activity.wish_list_id == 0
+
+    def test_wishlist_fields_set(self):
+        """Wishlist fields can be set for a logged-in user."""
+        activity = ActivityItem(id=123, show_wish_list=True, wish_list_id=456)
+        assert activity.show_wish_list is True
+        assert activity.wish_list_id == 456
+
     def test_missing_required_id(self):
         """id is required."""
         with pytest.raises(ValidationError):
@@ -174,6 +186,20 @@ class TestActivityDetail:
         )
         assert detail.activity_name == "Yoga Class"
         assert len(detail.facilities) == 2
+
+    def test_wishlist_fields_default(self):
+        """Wishlist fields default to not-wishlisted state."""
+        detail = ActivityDetail(activity_id=123)
+        assert detail.show_wish_list is False
+        assert detail.wish_list_id == 0
+
+    def test_wishlist_fields_set(self):
+        """Wishlist fields can be set for a logged-in user."""
+        detail = ActivityDetail(
+            activity_id=123, show_wish_list=True, wish_list_id=456
+        )
+        assert detail.show_wish_list is True
+        assert detail.wish_list_id == 456
 
 
 class TestFilterOption:

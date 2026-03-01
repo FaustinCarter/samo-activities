@@ -89,6 +89,19 @@
         if (spotsStr)     rows += metaRow('Spots',  spotsStr);
 
         var actionsHtml = '';
+
+        // Wishlist toggle button (only when wish_list_id is present in data)
+        if (event.wish_list_id !== undefined) {
+            var isWishlisted = event.wish_list_id > 0;
+            actionsHtml +=
+                '<button class="btn cal-popup-wishlist-btn' +
+                (isWishlisted ? ' wishlisted' : '') + '"' +
+                ' data-activity-id="' + escapeHtml(String(event.id)) + '"' +
+                ' data-wish-list-id="' + escapeHtml(String(event.wish_list_id)) + '">' +
+                (isWishlisted ? '\u2665 Wishlisted' : '\u2661 Wishlist') +
+                '</button>';
+        }
+
         actionsHtml +=
             '<a href="/activity/' + escapeHtml(String(event.id)) + '" class="btn">' +
             'View details</a>';
@@ -200,6 +213,69 @@
             closePopup();
         }
     });
+
+    // ── Wishlist toggle in popup ──────────────────────────────────────────────
+
+    content.addEventListener('click', function (e) {
+        var btn = e.target.closest('.cal-popup-wishlist-btn');
+        if (!btn) return;
+
+        var activityId = btn.getAttribute('data-activity-id');
+        var wishListId = parseInt(btn.getAttribute('data-wish-list-id'), 10) || 0;
+
+        if (wishListId > 0) {
+            // Remove from wishlist
+            fetch('/api/wishlist/' + wishListId, { method: 'DELETE' })
+                .then(function (res) {
+                    if (!res.ok) throw new Error(res.status);
+                    return res.json();
+                })
+                .then(function () {
+                    btn.setAttribute('data-wish-list-id', '0');
+                    btn.classList.remove('wishlisted');
+                    btn.textContent = '\u2661 Wishlist';
+                    updatePillWishlistState(activityId, 0);
+                })
+                .catch(function () {});
+        } else {
+            // Add to wishlist
+            fetch('/api/wishlist/' + activityId, { method: 'POST' })
+                .then(function (res) {
+                    if (!res.ok) throw new Error(res.status);
+                    return res.json();
+                })
+                .then(function (data) {
+                    var newId = data.wish_list_id || 0;
+                    btn.setAttribute('data-wish-list-id', String(newId));
+                    btn.classList.add('wishlisted');
+                    btn.textContent = '\u2665 Wishlisted';
+                    updatePillWishlistState(activityId, newId);
+                })
+                .catch(function () {});
+        }
+    });
+
+    function updatePillWishlistState(activityId, newWishListId) {
+        // Update all pills for this activity across the calendar
+        var pills = document.querySelectorAll('.cal-event-pill');
+        for (var i = 0; i < pills.length; i++) {
+            var raw = pills[i].getAttribute('data-event');
+            if (!raw) continue;
+            try {
+                var ev = JSON.parse(raw);
+                if (String(ev.id) !== String(activityId)) continue;
+                ev.wish_list_id = newWishListId;
+                pills[i].setAttribute('data-event', JSON.stringify(ev));
+                var nameSpan = pills[i].querySelector('.cal-event-name');
+                if (nameSpan) {
+                    var baseName = ev.name;
+                    nameSpan.innerHTML = (newWishListId > 0 ? '&hearts; ' : '') + escapeHtml(baseName);
+                }
+            } catch (err) {
+                // skip
+            }
+        }
+    }
 
     // Reposition on scroll/resize (debounced)
     var repositionTimer = null;

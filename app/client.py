@@ -170,7 +170,7 @@ class ActiveNetClient:
 
         if method == "GET":
             headers["Content-Type"] = "application/x-www-form-urlencoded;charset=utf-8"
-        elif method == "POST":
+        elif method in ("POST", "DELETE"):
             headers["Content-Type"] = "application/json;charset=utf-8"
             if self.csrf_token:
                 headers["X-CSRF-Token"] = self.csrf_token
@@ -234,6 +234,33 @@ class ActiveNetClient:
             async with httpx.AsyncClient() as c:
                 response = await c.post(
                     url, headers=headers, params=final_params, json=json_body
+                )
+
+        response.raise_for_status()
+        data = response.json()
+        self._check_response(data)
+        return data
+
+    async def delete(
+        self,
+        path: str,
+        params: dict | None = None,
+        page_info: dict | None = None,
+        client: httpx.AsyncClient | None = None,
+    ) -> dict:
+        """Make a DELETE request to the API."""
+        url = f"{self.base_url}{path}"
+        headers = self._get_headers("DELETE", page_info=page_info)
+        final_params = self._get_params(params)
+
+        if client:
+            response = await client.request(
+                "DELETE", url, headers=headers, params=final_params
+            )
+        else:
+            async with httpx.AsyncClient() as c:
+                response = await c.request(
+                    "DELETE", url, headers=headers, params=final_params
                 )
 
         response.raise_for_status()

@@ -71,6 +71,7 @@ class CalendarEvent(typing.TypedDict):
     starting_time: str
     ending_time: str
     number: str
+    wish_list_id: int
 
 
 class CalendarDay(typing.TypedDict):
@@ -262,6 +263,7 @@ def build_calendar_data(
             starting_time=starting_time,
             ending_time=ending_time,
             number=activity.number,
+            wish_list_id=activity.wish_list_id,
         )
 
         all_dates = activity_meeting_dates(activity, meeting_info)
@@ -359,6 +361,8 @@ def build_query_string(params: dict, page: int) -> str:
         query_params.append(("center_ids", str(center_id)))
     if params.get("show_full_details"):
         query_params.append(("show_full_details", "true"))
+    if params.get("wishlist_only"):
+        query_params.append(("wishlist_only", "true"))
     if params.get("view") and params["view"] != "card":
         query_params.append(("view", params["view"]))
 
