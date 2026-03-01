@@ -652,20 +652,65 @@ Returns the full detail for a single activity.
 ```json
 {
   "detail": {
-    "activity_id": 103527,
-    "activity_name": "Level 6: Tiger Shark Swim Lessons",
+    "activity_id": 103620,
+    "activity_name": "Preschool Ballet",
     "wish_list_id": 0,
     "show_wish_list": true,
     "season_name": "Spring 2026",
     "term_name": null,
-    "category": "Aquatics/Swim - Group Lessons",
-    "sub_category": "Essential Resident/Non-Resident",
+    "category": "Youth/Dance",
+    "sub_category": "Ballet",
     "risk_category": null,
     "activity_type": "Classes",
-    "activity_number": "3018.112",
-    "first_date": "2026-03-03",
-    "last_date": "2026-03-26",
-    "facilities": [],
+    "activity_number": "4010.201",
+    "first_date": "2026-03-15",
+    "last_date": "2026-05-30",
+    "catalog_description": "<p>Intro to ballet for ages 3-5.</p>",
+    "online_notes": "<div>Wear ballet slippers.</div>",
+    "user_notes": "",
+    "location_description": "",
+    "age_description": "3y - 5y 11m",
+    "age_min_year": 3,
+    "age_min_month": 0,
+    "age_max_year": 5,
+    "age_max_month": 11,
+    "min_grade": null,
+    "max_grade": null,
+    "allowed_gender": "Both",
+    "space_status": "29 openings remaining",
+    "space_message": "",
+    "allow_drop_in_reg": false,
+    "private_lesson": false,
+    "facilities": [
+      {
+        "id": 42,
+        "name": "Lincoln Park Studio A",
+        "detail_url": "/santamonicarecreation/facilities/lincoln-park-studio-a/42",
+        "address1": "1450 Ocean Ave",
+        "address2": "",
+        "city": "Santa Monica",
+        "state": "CA",
+        "zip_code": "90401",
+        "country": "US",
+        "phone": "",
+        "center_id": 5
+      }
+    ],
+    "centers": [
+      {
+        "id": 5,
+        "name": "Lincoln Park",
+        "address1": "1450 Ocean Ave",
+        "address2": "",
+        "city": "Santa Monica",
+        "state": "CA",
+        "zip_code": "90401",
+        "country": "US",
+        "phone": "(310) 458-8974",
+        "latitude": 34.0035,
+        "longitude": -118.4956
+      }
+    ],
     "instructors": [
       {
         "id": 177,
@@ -682,10 +727,32 @@ Returns the full detail for a single activity.
         "can_be_scheduled": false
       }
     ],
-    "online_notes": "<div>HTML notes...</div>"
+    "other_info": {
+      "department": "Cultural Affairs",
+      "education_unit": "",
+      "supervisor": "Jane Doe",
+      "skills": [],
+      "sessions": 20
+    },
+    "extra_detail": [
+      {
+        "description": "Image",
+        "description_url": "",
+        "detail_value": "https://example.com/images/ballet.jpg",
+        "thumbnail_url": "https://example.com/images/ballet_thumb.jpg",
+        "attachment_url": "",
+        "attachment_name": "",
+        "attachment_type": "",
+        "attachment_size": 0
+      }
+    ]
   }
 }
 ```
+
+> **Note:** The original HAR capture for `103527` returned empty `facilities`, `centers`, and `extra_detail` arrays.
+> The expanded example above is from a HAR capture of `103620` which populates all known fields.
+> Fields not listed above (e.g. `risk_category`) are present in the response but not modeled by the app.
 
 ---
 

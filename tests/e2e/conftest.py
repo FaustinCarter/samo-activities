@@ -164,7 +164,7 @@ def mock_detail():
         category="Aquatics",
         first_date="2026-03-15",
         last_date="2026-04-15",
-        facilities=["Memorial Park Pool"],
+        facilities=[{"name": "Memorial Park Pool"}],
         online_notes="<p>Bring your own towel.</p>",
     )
 

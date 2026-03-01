@@ -181,7 +181,7 @@ class TestActivityDetail:
             sub_category="Yoga",
             first_date="2026-03-01",
             last_date="2026-05-31",
-            facilities=["Studio A", "Studio B"],
+            facilities=[{"name": "Studio A"}, {"name": "Studio B"}],
             online_notes="<p>Bring a mat.</p>",
         )
         assert detail.activity_name == "Yoga Class"

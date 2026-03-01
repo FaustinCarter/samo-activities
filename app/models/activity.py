@@ -122,10 +122,10 @@ class MeetingAndRegistrationDates(pydantic.BaseModel):
     activity_id: int
     no_meeting_dates: bool = False
     activity_patterns: list[ActivityPattern] = pydantic.Field(default_factory=list)
-    # enrollment_datetimes shape is not fully documented; accept as raw dict to
-    # avoid validation failures if the actual API response differs from the docs.
     priority_enrollment_datetimes: EnrollmentDatetimes | None = None
-    enrollment_datetimes: list[dict] | None = None
+    enrollment_datetimes: list[EnrollmentDatetimes] = pydantic.Field(
+        default_factory=list
+    )
 
 
 # --- Activity detail from /rest/activity/detail/{id} ---
@@ -143,6 +143,53 @@ class Instructor(pydantic.BaseModel):
     phone: str = ""
 
 
+class Facility(pydantic.BaseModel):
+    id: int = 0
+    name: str = ""
+    detail_url: str = ""
+    address1: str | None = None
+    address2: str | None = None
+    city: str | None = None
+    state: str | None = None
+    zip_code: str | None = None
+    country: str | None = None
+    phone: str | None = None
+    center_id: int = 0
+
+
+class Center(pydantic.BaseModel):
+    id: int = 0
+    name: str = ""
+    address1: str = ""
+    address2: str = ""
+    city: str = ""
+    state: str = ""
+    zip_code: str = ""
+    country: str = ""
+    phone: str = ""
+    latitude: float | None = None
+    longitude: float | None = None
+
+
+class ExtraDetail(pydantic.BaseModel):
+    description: str = ""
+    description_url: str = ""
+    detail_value: str = ""
+    thumbnail_url: str = ""
+    attachment_url: str = ""
+    attachment_name: str = ""
+    attachment_type: str = ""
+    attachment_size: int = 0
+
+
+class OtherInfo(pydantic.BaseModel):
+    department: str = ""
+    education_unit: str = ""
+    supervisor: str = ""
+    skills: list = pydantic.Field(default_factory=list)
+    sessions: int = 0
+
+
 class ActivityDetail(pydantic.BaseModel):
     activity_id: int
     activity_name: str = ""
@@ -154,9 +201,27 @@ class ActivityDetail(pydantic.BaseModel):
     sub_category: str = ""
     first_date: str = ""
     last_date: str = ""
-    facilities: list = pydantic.Field(default_factory=list)
+    facilities: list[Facility] = pydantic.Field(default_factory=list)
     instructors: list[Instructor] = pydantic.Field(default_factory=list)
     online_notes: str = ""
+    user_notes: str = ""
+    catalog_description: str = ""
+    location_description: str = ""
+    age_description: str = ""
+    age_min_year: int = 0
+    age_min_month: int = 0
+    age_max_year: int = 0
+    age_max_month: int = 0
+    min_grade: str | None = None
+    max_grade: str | None = None
+    allowed_gender: str = ""
+    other_info: OtherInfo | None = None
+    extra_detail: list[ExtraDetail] = pydantic.Field(default_factory=list)
+    centers: list[Center] = pydantic.Field(default_factory=list)
+    space_status: str = ""
+    space_message: str = ""
+    allow_drop_in_reg: bool = False
+    private_lesson: bool = False
     show_wish_list: bool = False
     wish_list_id: int = 0
 

@@ -9,6 +9,16 @@
         <a href="javascript:history.back()" class="btn btn-back">&larr; Back to Results</a>
     </nav>
 
+    {# --- Image gallery --- #}
+    {% set images = detail.extra_detail|selectattr("description", "equalto", "Image")|list %}
+    {% if images %}
+    <div class="detail-gallery">
+        {% for img in images %}
+        <img class="detail-gallery-img" src="{{ img.detail_value or img.thumbnail_url }}" alt="{{ detail.activity_name }}">
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <header class="detail-header">
         <h1 class="detail-title">{{ detail.activity_name }}</h1>
         <div class="detail-meta">
@@ -20,6 +30,9 @@
             {% endif %}
             {% if detail.season_name %}
             <span class="detail-badge">{{ detail.season_name }}</span>
+            {% endif %}
+            {% if detail.space_status %}
+            <span class="space-badge">{{ detail.space_status }}</span>
             {% endif %}
         </div>
     </header>
@@ -36,6 +49,55 @@
                 <span class="detail-subcategory"> / {{ detail.sub_category }}</span>
                 {% endif %}
             </p>
+        </section>
+        {% endif %}
+
+        {# --- Quick Facts --- #}
+        {% if detail.age_description or detail.allowed_gender or detail.other_info or detail.allow_drop_in_reg or detail.private_lesson or detail.min_grade %}
+        <section class="detail-section">
+            <h2>Quick Facts</h2>
+            <div class="detail-quickfacts">
+                {% if detail.age_description %}
+                <div class="quickfact-chip">
+                    <span class="quickfact-label">Ages</span>
+                    <span class="quickfact-value">{{ detail.age_description }}</span>
+                </div>
+                {% endif %}
+                {% if detail.allowed_gender and detail.allowed_gender != "Both" %}
+                <div class="quickfact-chip">
+                    <span class="quickfact-label">Gender</span>
+                    <span class="quickfact-value">{{ detail.allowed_gender }}</span>
+                </div>
+                {% endif %}
+                {% if detail.min_grade or detail.max_grade %}
+                <div class="quickfact-chip">
+                    <span class="quickfact-label">Grades</span>
+                    <span class="quickfact-value">{{ detail.min_grade or "any" }} &ndash; {{ detail.max_grade or "any" }}</span>
+                </div>
+                {% endif %}
+                {% if detail.other_info and detail.other_info.department %}
+                <div class="quickfact-chip">
+                    <span class="quickfact-label">Dept</span>
+                    <span class="quickfact-value">{{ detail.other_info.department }}</span>
+                </div>
+                {% endif %}
+                {% if detail.other_info and detail.other_info.sessions %}
+                <div class="quickfact-chip">
+                    <span class="quickfact-label">Sessions</span>
+                    <span class="quickfact-value">{{ detail.other_info.sessions }}</span>
+                </div>
+                {% endif %}
+                {% if detail.allow_drop_in_reg %}
+                <div class="quickfact-chip quickfact-chip--highlight">
+                    <span class="quickfact-value">Drop-in OK</span>
+                </div>
+                {% endif %}
+                {% if detail.private_lesson %}
+                <div class="quickfact-chip quickfact-chip--highlight">
+                    <span class="quickfact-value">Private Lesson</span>
+                </div>
+                {% endif %}
+            </div>
         </section>
         {% endif %}
 
@@ -70,7 +132,7 @@
 
         {# --- Registration Dates --- #}
         {% if meeting_dates %}
-            {% set enroll = meeting_dates.enrollment_datetimes %}
+            {% set enroll = meeting_dates.enrollment_datetimes[0] if meeting_dates.enrollment_datetimes else None %}
             {% set priority = meeting_dates.priority_enrollment_datetimes %}
             {% if (enroll and (enroll.first_daytime_internet or enroll.last_daytime_internet))
                or (priority and (priority.first_daytime_internet or priority.last_daytime_internet)) %}
@@ -105,12 +167,47 @@
         {% endif %}
 
         {# --- Location / Facilities --- #}
-        {% if detail.facilities %}
+        {% if detail.facilities or detail.centers %}
         <section class="detail-section">
             <h2>Location</h2>
             {% for facility in detail.facilities %}
-            <p class="detail-facility">{{ facility }}</p>
+            <p class="detail-facility">
+                {% if facility.detail_url %}
+                <a href="{{ facility.detail_url }}">{{ facility.name }}</a>
+                {% else %}
+                {{ facility.name }}
+                {% endif %}
+            </p>
             {% endfor %}
+
+            {% for center in detail.centers %}
+            <div class="detail-center">
+                <p class="detail-center-name">{{ center.name }}</p>
+                {% if center.address1 %}
+                <p class="detail-center-address">
+                    {{ center.address1 }}
+                    {% if center.address2 %}<br>{{ center.address2 }}{% endif %}
+                    <br>{{ center.city }}, {{ center.state }} {{ center.zip_code }}
+                </p>
+                {% endif %}
+                {% if center.phone %}
+                <p class="detail-center-phone">
+                    <a href="tel:{{ center.phone }}">{{ center.phone }}</a>
+                </p>
+                {% endif %}
+                {% if center.latitude and center.longitude %}
+                <p>
+                    <a class="detail-map-link" href="https://www.google.com/maps/search/?api=1&query={{ center.latitude }},{{ center.longitude }}" target="_blank" rel="noopener">
+                        View on Map &rarr;
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {% if detail.location_description %}
+            <p class="detail-location-note">{{ detail.location_description }}</p>
+            {% endif %}
         </section>
         {% endif %}
 
@@ -163,12 +260,26 @@
         {% endif %}
 
         {# --- Description --- #}
-        {% if detail.online_notes %}
+        {% if detail.catalog_description or detail.online_notes or detail.user_notes %}
         <section class="detail-section">
             <h2>Description</h2>
+            {% if detail.catalog_description %}
             <div class="detail-description">
+                {{ detail.catalog_description|sanitize_html|safe }}
+            </div>
+            {% endif %}
+            {% if detail.online_notes %}
+            <div class="detail-description{% if detail.catalog_description %} detail-description--secondary{% endif %}">
+                {% if detail.catalog_description %}<h3 class="detail-desc-subhead">Online Notes</h3>{% endif %}
                 {{ detail.online_notes|sanitize_html|safe }}
             </div>
+            {% endif %}
+            {% if detail.user_notes %}
+            <div class="detail-description detail-description--secondary">
+                <h3 class="detail-desc-subhead">Additional Notes</h3>
+                {{ detail.user_notes|sanitize_html|safe }}
+            </div>
+            {% endif %}
         </section>
         {% endif %}
 
@@ -233,4 +344,3 @@
 })();
 </script>
 {% endblock %}
-
