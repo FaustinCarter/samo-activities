@@ -62,13 +62,12 @@
     {% endif %}
 
     <div class="activity-actions">
-        {% if api_client.is_authenticated %}
         <button class="btn wishlist-btn{% if activity.wish_list_id %} wishlisted{% endif %}"
                 data-activity-id="{{ activity.id }}"
-                data-wish-list-id="{{ activity.wish_list_id }}">
+                data-wish-list-id="{{ activity.wish_list_id }}"
+                {% if not api_client.is_authenticated %}disabled title="Log in to save to wishlist"{% endif %}>
             {% if activity.wish_list_id %}&#9829; Wishlisted{% else %}&#9825; Wishlist{% endif %}
         </button>
-        {% endif %}
         {% set btn_status = button_statuses.get(activity.id) if button_statuses else None %}
         {% if btn_status and btn_status.action_link and btn_status.action_link.href %}
         <a href="{{ btn_status.action_link.href }}" class="btn {% if btn_status.action_link.type == 3 %}btn-enroll{% else %}btn-waitlist{% endif %}" target="_blank">

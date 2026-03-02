@@ -359,8 +359,8 @@ class TestActivityDetailWishlist:
         )
 
     @respx.mock
-    def test_no_wishlist_button_when_anonymous(self, client):
-        """Anonymous users do not see a wishlist button on the detail page."""
+    def test_wishlist_button_disabled_when_anonymous(self, client):
+        """Anonymous users see a disabled wishlist button on the detail page."""
         detail_json = {
             "headers": {"response_code": "0000"},
             "body": {
@@ -377,7 +377,9 @@ class TestActivityDetailWishlist:
         response = client.get("/activity/12345")
 
         assert response.status_code == 200
-        assert 'id="detail-wishlist-btn"' not in response.text
+        assert 'id="detail-wishlist-btn"' in response.text
+        assert "disabled" in response.text
+        assert "Log in to save to wishlist" in response.text
 
     @respx.mock
     def test_wishlist_button_shown_when_authenticated(self, client):
@@ -621,13 +623,13 @@ class TestWishlistTemplateRendering:
     """Tests that wishlist UI elements render correctly based on auth state."""
 
     @respx.mock
-    def test_no_heart_buttons_when_anonymous(
+    def test_heart_buttons_disabled_when_anonymous(
         self,
         client,
         mock_api_filters_response,
         mock_api_search_response,
     ):
-        """Anonymous users do not see wishlist heart buttons on cards."""
+        """Anonymous users see disabled wishlist heart buttons on cards."""
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(200, json=mock_api_filters_response)
         )
@@ -638,17 +640,17 @@ class TestWishlistTemplateRendering:
         response = client.get("/")
 
         assert response.status_code == 200
-        # The string appears in inline JS, but no actual button elements
-        assert 'class="wishlist-btn' not in response.text
+        assert "wishlist-btn" in response.text
+        assert "Log in to save to wishlist" in response.text
 
     @respx.mock
-    def test_no_wishlist_checkbox_when_anonymous(
+    def test_wishlist_checkbox_disabled_when_anonymous(
         self,
         client,
         mock_api_filters_response,
         mock_api_search_response,
     ):
-        """Anonymous users do not see the wishlist filter checkbox."""
+        """Anonymous users see the wishlist filter checkbox but it is disabled."""
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(200, json=mock_api_filters_response)
         )
@@ -659,7 +661,8 @@ class TestWishlistTemplateRendering:
         response = client.get("/")
 
         assert response.status_code == 200
-        assert "View wishlist only" not in response.text
+        assert "View wishlist only" in response.text
+        assert "Log in to use wishlist" in response.text
 
     @respx.mock
     def test_heart_buttons_shown_when_authenticated(self, client):

@@ -51,14 +51,14 @@
                 </label>
             </div>
 
-            {% if api_client.is_authenticated %}
             <div class="filter-group filter-group--checkbox">
-                <label>
-                    <input type="checkbox" name="wishlist_only" value="true" {% if params.wishlist_only %}checked{% endif %}>
+                <label {% if not api_client.is_authenticated %}title="Log in to use wishlist"{% endif %}>
+                    <input type="checkbox" name="wishlist_only" value="true"
+                           {% if params.wishlist_only %}checked{% endif %}
+                           {% if not api_client.is_authenticated %}disabled{% endif %}>
                     View wishlist only
                 </label>
             </div>
-            {% endif %}
             
             <div class="filter-group">
                 <button type="submit" class="btn btn-primary">Search</button>

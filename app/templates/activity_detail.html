@@ -287,14 +287,13 @@
 
     {# --- Action buttons --- #}
     <div class="detail-actions">
-        {% if api_client.is_authenticated %}
         <button class="btn wishlist-btn{% if detail.wish_list_id %} wishlisted{% endif %}"
                 id="detail-wishlist-btn"
                 data-activity-id="{{ detail.activity_id }}"
-                data-wish-list-id="{{ detail.wish_list_id }}">
+                data-wish-list-id="{{ detail.wish_list_id }}"
+                {% if not api_client.is_authenticated %}disabled title="Log in to save to wishlist"{% endif %}>
             {% if detail.wish_list_id %}&#9829; Wishlisted{% else %}&#9825; Wishlist{% endif %}
         </button>
-        {% endif %}
         {% if button_status and button_status.action_link and button_status.action_link.href %}
         <a href="{{ button_status.action_link.href }}" class="btn {% if button_status.action_link.type == 3 %}btn-enroll{% else %}btn-waitlist{% endif %}" target="_blank">
             {{ button_status.action_link.label or "Enroll Now" }}
