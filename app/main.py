@@ -51,6 +51,9 @@ def create_app() -> fastapi.FastAPI:
     templates.env.filters["format_date"] = _format_date
     templates.env.filters["sanitize_html"] = _sanitize_html
 
+    # Template globals
+    templates.env.globals["original_site_link"] = config.settings.original_site_link
+
     app.state.templates = templates
 
     # Mount static files

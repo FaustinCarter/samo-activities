@@ -86,10 +86,12 @@ def mock_activities():
             date_range_end="2026-04-15",
             location=ActionLink(label="Memorial Park Pool"),
             ages="5 - 8 years",
-            total_open=5,
+            total_open=10,
+            already_enrolled=5,
             action_link=ActionLink(
                 href="https://example.com/enroll/12345",
                 label="Enroll Now",
+                type=3,
             ),
         ),
         ActivityItem(
@@ -100,10 +102,12 @@ def mock_activities():
             date_range_end="2026-05-20",
             location=ActionLink(label="Community Center"),
             ages="18+ years",
-            total_open=12,
+            total_open=20,
+            already_enrolled=8,
             action_link=ActionLink(
                 href="https://example.com/enroll/12346",
                 label="Enroll Now",
+                type=3,
             ),
         ),
         ActivityItem(
@@ -190,6 +194,7 @@ def mock_button_status():
         action_link=ActionLink(
             href="https://example.com/enroll/12345",
             label="Enroll Now",
+            type=3,
         )
     )
 

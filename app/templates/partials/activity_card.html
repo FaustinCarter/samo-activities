@@ -3,16 +3,6 @@
         <h3 class="activity-name">
             <a href="/activity/{{ activity.id }}">{{ activity.name }}</a>
         </h3>
-        {% if api_client.is_authenticated %}
-        <button class="wishlist-btn {% if activity.wish_list_id %}wishlisted{% endif %}"
-                data-activity-id="{{ activity.id }}"
-                data-wish-list-id="{{ activity.wish_list_id }}"
-                aria-label="{% if activity.wish_list_id %}Remove from{% else %}Add to{% endif %} wishlist">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if activity.wish_list_id %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-        </button>
-        {% endif %}
     </div>
 
     <div class="activity-meta">
@@ -51,8 +41,8 @@
         {% if activity.ages %}
         <span class="activity-age">{{ activity.ages }}</span>
         {% endif %}
-        {% if activity.total_open is not none %}
-        <span class="activity-spots">{{ activity.total_open }} spots open</span>
+        {% if activity.total_open is not none and activity.already_enrolled is not none %}
+        <span class="activity-spots">{{ activity.total_open - activity.already_enrolled }} of {{ activity.total_open }} spots open</span>
         {% endif %}
     </div>
 
@@ -71,11 +61,19 @@
     </div>
     {% endif %}
 
-    {% if activity.action_link and activity.action_link.href %}
     <div class="activity-actions">
-        <a href="{{ activity.action_link.href }}" class="btn btn-enroll" target="_blank">
-            {{ activity.action_link.label or "Enroll" }}
+        {% if api_client.is_authenticated %}
+        <button class="btn wishlist-btn{% if activity.wish_list_id %} wishlisted{% endif %}"
+                data-activity-id="{{ activity.id }}"
+                data-wish-list-id="{{ activity.wish_list_id }}">
+            {% if activity.wish_list_id %}&#9829; Wishlisted{% else %}&#9825; Wishlist{% endif %}
+        </button>
+        {% endif %}
+        {% set btn_status = button_statuses.get(activity.id) if button_statuses else None %}
+        {% if btn_status and btn_status.action_link and btn_status.action_link.href %}
+        <a href="{{ btn_status.action_link.href }}" class="btn {% if btn_status.action_link.type == 3 %}btn-enroll{% else %}btn-waitlist{% endif %}" target="_blank">
+            {{ btn_status.action_link.label or "Enroll" }}
         </a>
+        {% endif %}
     </div>
-    {% endif %}
 </article>

@@ -7,6 +7,7 @@ class Settings(pydantic_settings.BaseSettings):
     page_size: int = 20
     host: str = "0.0.0.0"
     port: int = 8000
+    original_site_link: str = "https://anc.apm.activecommunities.com/santamonicarecreation/activity/search"
 
     @property
     def base_site_url(self) -> str:

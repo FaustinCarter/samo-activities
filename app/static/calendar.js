@@ -64,57 +64,64 @@
     }
 
     // ── Render popup content ──────────────────────────────────────────────────
+    // eventData shape is defined by CalendarEvent.popup_dict() in
+    // app/models/calendar.py and serialized into each pill's data-event attr.
 
-    function renderPopup(event) {
-        var dateRange = formatDateRange(event.date_range_start, event.date_range_end);
+    function renderPopup(eventData) {
+        var dateRange = formatDateRange(eventData.date_range_start, eventData.date_range_end);
         var timeStr = '';
-        if (event.starting_time) {
-            timeStr = event.starting_time;
-            if (event.ending_time) {
-                timeStr += ' \u2013 ' + event.ending_time;
+        if (eventData.starting_time) {
+            timeStr = eventData.starting_time;
+            if (eventData.ending_time) {
+                timeStr += ' \u2013 ' + eventData.ending_time;
             }
         }
 
         var spotsStr = '';
-        if (event.total_open !== null && event.total_open !== undefined) {
-            spotsStr = event.total_open + ' open';
+        if (eventData.total_open !== null && eventData.total_open !== undefined) {
+            if (eventData.already_enrolled !== null && eventData.already_enrolled !== undefined) {
+                var remaining = eventData.total_open - eventData.already_enrolled;
+                spotsStr = remaining + ' of ' + eventData.total_open + ' spots open';
+            } else {
+                spotsStr = eventData.total_open + ' spots open';
+            }
         }
 
         var rows = '';
-        if (event.number) rows += metaRow('Number', event.number);
-        if (dateRange)    rows += metaRow('Dates',  dateRange);
-        if (timeStr)      rows += metaRow('Time',   timeStr);
-        if (event.location) rows += metaRow('Location', event.location);
-        if (event.ages)   rows += metaRow('Ages',   event.ages);
-        if (spotsStr)     rows += metaRow('Spots',  spotsStr);
+        if (eventData.number) rows += metaRow('Number', eventData.number);
+        if (dateRange)        rows += metaRow('Dates',  dateRange);
+        if (timeStr)          rows += metaRow('Time',   timeStr);
+        if (eventData.location) rows += metaRow('Location', eventData.location);
+        if (eventData.ages)   rows += metaRow('Ages',   eventData.ages);
+        if (spotsStr)         rows += metaRow('Spots',  spotsStr);
 
-        var actionsHtml = '';
+        var actionsHtml =
+            '<a href="/activity/' + escapeHtml(String(eventData.id)) + '" class="btn">' +
+            'View details</a>';
 
         // Wishlist toggle button (only when wish_list_id is present in data)
-        if (event.wish_list_id !== undefined) {
-            var isWishlisted = event.wish_list_id > 0;
+        if (eventData.wish_list_id !== undefined) {
+            var isWishlisted = eventData.wish_list_id > 0;
             actionsHtml +=
-                '<button class="btn cal-popup-wishlist-btn' +
+                '<button class="btn wishlist-btn' +
                 (isWishlisted ? ' wishlisted' : '') + '"' +
-                ' data-activity-id="' + escapeHtml(String(event.id)) + '"' +
-                ' data-wish-list-id="' + escapeHtml(String(event.wish_list_id)) + '">' +
+                ' data-activity-id="' + escapeHtml(String(eventData.id)) + '"' +
+                ' data-wish-list-id="' + escapeHtml(String(eventData.wish_list_id)) + '">' +
                 (isWishlisted ? '\u2665 Wishlisted' : '\u2661 Wishlist') +
                 '</button>';
         }
 
-        actionsHtml +=
-            '<a href="/activity/' + escapeHtml(String(event.id)) + '" class="btn">' +
-            'View details</a>';
-        if (event.action_link_href) {
+        if (eventData.action_link_href) {
+            var enrollClass = eventData.action_link_type === 3 ? 'btn-enroll' : 'btn-waitlist';
             actionsHtml +=
-                '<a href="' + escapeHtml(event.action_link_href) + '" ' +
-                'class="btn btn-enroll" target="_blank" rel="noopener">' +
-                escapeHtml(event.action_link_label || 'Enroll') + '</a>';
+                '<a href="' + escapeHtml(eventData.action_link_href) + '" ' +
+                'class="btn ' + enrollClass + '" target="_blank" rel="noopener">' +
+                escapeHtml(eventData.action_link_label || 'Enroll') + '</a>';
         }
 
         content.innerHTML =
-            '<div class="cal-popup-color-bar" style="background:' + escapeHtml(event.color) + '"></div>' +
-            '<p class="cal-popup-title">' + escapeHtml(event.name) + '</p>' +
+            '<p class="cal-popup-title">' + escapeHtml(eventData.name) + '</p>' +
+            '<div class="cal-popup-color-bar" style="background:' + escapeHtml(eventData.color) + '"></div>' +
             '<div class="cal-popup-meta">' + rows + '</div>' +
             '<div class="cal-popup-actions">' + actionsHtml + '</div>';
     }
@@ -214,45 +221,12 @@
         }
     });
 
-    // ── Wishlist toggle in popup ──────────────────────────────────────────────
+    // ── Wishlist toggle in popup (delegates to shared toggleWishlist) ─────────
 
     content.addEventListener('click', function (e) {
-        var btn = e.target.closest('.cal-popup-wishlist-btn');
+        var btn = e.target.closest('.wishlist-btn');
         if (!btn) return;
-
-        var activityId = btn.getAttribute('data-activity-id');
-        var wishListId = parseInt(btn.getAttribute('data-wish-list-id'), 10) || 0;
-
-        if (wishListId > 0) {
-            // Remove from wishlist
-            fetch('/api/wishlist/' + wishListId, { method: 'DELETE' })
-                .then(function (res) {
-                    if (!res.ok) throw new Error(res.status);
-                    return res.json();
-                })
-                .then(function () {
-                    btn.setAttribute('data-wish-list-id', '0');
-                    btn.classList.remove('wishlisted');
-                    btn.textContent = '\u2661 Wishlist';
-                    updatePillWishlistState(activityId, 0);
-                })
-                .catch(function () {});
-        } else {
-            // Add to wishlist
-            fetch('/api/wishlist/' + activityId, { method: 'POST' })
-                .then(function (res) {
-                    if (!res.ok) throw new Error(res.status);
-                    return res.json();
-                })
-                .then(function (data) {
-                    var newId = data.wish_list_id || 0;
-                    btn.setAttribute('data-wish-list-id', String(newId));
-                    btn.classList.add('wishlisted');
-                    btn.textContent = '\u2665 Wishlisted';
-                    updatePillWishlistState(activityId, newId);
-                })
-                .catch(function () {});
-        }
+        toggleWishlist(btn, updatePillWishlistState);
     });
 
     function updatePillWishlistState(activityId, newWishListId) {

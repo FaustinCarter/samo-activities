@@ -2,7 +2,6 @@ import asyncio
 import typing
 
 import fastapi
-import nh3
 
 from app.calendar import build_calendar_data, build_query_string
 from app.client import ActiveNetClient
@@ -61,23 +60,34 @@ async def browse_activities(
     # and optionally for card view when show_full_details is on.
     meeting_dates: dict[int, activity_models.MeetingAndRegistrationDates] = {}
     prices: dict[int, activity_models.EstimatedPrice] = {}
+    button_statuses: dict[int, activity_models.ButtonStatus] = {}
 
     if activities:
         activity_ids = [a.id for a in activities]
         need_meeting_dates = show_full_details or view == "calendar"
         need_prices = show_full_details
 
-        if need_meeting_dates and need_prices:
-            meeting_dates, prices = await asyncio.gather(
-                activities_service.get_meeting_dates_batch(api_client, activity_ids),
-                activities_service.get_prices_batch(api_client, activity_ids),
+        parallel_tasks: dict[str, typing.Any] = {
+            "button_statuses": activities_service.get_button_status_batch(
+                api_client, activity_ids
+            ),
+        }
+        if need_meeting_dates:
+            parallel_tasks["meeting_dates"] = (
+                activities_service.get_meeting_dates_batch(api_client, activity_ids)
             )
-        elif need_meeting_dates:
-            meeting_dates = await activities_service.get_meeting_dates_batch(
+        if need_prices:
+            parallel_tasks["prices"] = activities_service.get_prices_batch(
                 api_client, activity_ids
             )
-        elif need_prices:
-            prices = await activities_service.get_prices_batch(api_client, activity_ids)
+
+        results = await asyncio.gather(*parallel_tasks.values())
+        resolved = dict(zip(parallel_tasks.keys(), results))
+        button_statuses = resolved["button_statuses"]
+        if "meeting_dates" in resolved:
+            meeting_dates = resolved["meeting_dates"]
+        if "prices" in resolved:
+            prices = resolved["prices"]
 
     params = {
         "q": q,
@@ -96,7 +106,9 @@ async def browse_activities(
     # Build calendar data structure (empty list if not in calendar view)
     calendar_months = []
     if view == "calendar" and activities:
-        calendar_months = build_calendar_data(activities, meeting_dates)
+        calendar_months = build_calendar_data(
+            activities, meeting_dates, button_statuses
+        )
 
     templates = request.app.state.templates
     return templates.TemplateResponse(
@@ -107,6 +119,7 @@ async def browse_activities(
             "activities": activities,
             "meeting_dates": meeting_dates,
             "prices": prices,
+            "button_statuses": button_statuses,
             "filters": filters,
             "page_info": page_info,
             "params": params,

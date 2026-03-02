@@ -144,50 +144,5 @@ document.querySelectorAll('.view-toggle-btn').forEach(function(btn) {
         document.getElementById('filter-form').submit();
     });
 });
-
-// Wishlist toggle on activity cards (event delegation)
-(function() {
-    var grid = document.querySelector('.activity-grid');
-    if (!grid) return;
-
-    grid.addEventListener('click', function(e) {
-        var btn = e.target.closest('.wishlist-btn');
-        if (!btn) return;
-        e.preventDefault();
-
-        var activityId = btn.getAttribute('data-activity-id');
-        var wishListId = parseInt(btn.getAttribute('data-wish-list-id'), 10) || 0;
-        var svg = btn.querySelector('svg path');
-
-        if (wishListId > 0) {
-            fetch('/api/wishlist/' + wishListId, { method: 'DELETE' })
-                .then(function(res) {
-                    if (!res.ok) throw new Error(res.status);
-                    return res.json();
-                })
-                .then(function() {
-                    btn.setAttribute('data-wish-list-id', '0');
-                    btn.classList.remove('wishlisted');
-                    btn.setAttribute('aria-label', 'Add to wishlist');
-                    if (svg) svg.setAttribute('fill', 'none');
-                })
-                .catch(function() {});
-        } else {
-            fetch('/api/wishlist/' + activityId, { method: 'POST' })
-                .then(function(res) {
-                    if (!res.ok) throw new Error(res.status);
-                    return res.json();
-                })
-                .then(function(data) {
-                    var newId = data.wish_list_id || 0;
-                    btn.setAttribute('data-wish-list-id', String(newId));
-                    btn.classList.add('wishlisted');
-                    btn.setAttribute('aria-label', 'Remove from wishlist');
-                    if (svg) svg.setAttribute('fill', 'currentColor');
-                })
-                .catch(function() {});
-        }
-    });
-})();
 </script>
 {% endblock %}

@@ -127,6 +127,15 @@ a:hover {
     background-color: #219a52;
 }
 
+.btn-waitlist {
+    background-color: #e67e22;
+    color: white;
+}
+
+.btn-waitlist:hover {
+    background-color: #cf6d17;
+}
+
 /* Filter form */
 .filters {
     background-color: white;
@@ -232,25 +241,6 @@ a:hover {
     min-width: 0;
 }
 
-/* Wishlist heart button */
-.wishlist-btn {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #ccc;
-    padding: 0.15rem;
-    line-height: 1;
-    transition: color 0.15s;
-}
-
-.wishlist-btn:hover {
-    color: #e74c3c;
-}
-
-.wishlist-btn.wishlisted {
-    color: #e74c3c;
-}
 
 .activity-category {
     font-size: 0.75rem;
@@ -352,8 +342,15 @@ a:hover {
 }
 
 .activity-actions {
+    display: flex;
+    gap: 0.5rem;
     margin-top: auto;
     padding-top: 0.75rem;
+}
+
+.activity-actions .btn {
+    flex: 1 1 0;
+    text-align: center;
 }
 
 /* ── Detail page ─────────────────────────────────────────── */
@@ -682,14 +679,16 @@ a:hover {
 
 /* Enroll button */
 .detail-actions {
+    display: flex;
+    gap: 0.5rem;
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid #eee;
 }
 
-.btn-enroll--large {
-    font-size: 1rem;
-    padding: 0.75rem 2rem;
+.detail-actions .btn {
+    flex: 1 1 0;
+    text-align: center;
 }
 
 /* Pagination */
@@ -1015,24 +1014,27 @@ a:hover {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.75rem;
-    flex-wrap: wrap;
 }
 
 .cal-popup-actions .btn {
+    flex: 1 1 0;
     font-size: 0.8rem;
     padding: 0.35rem 0.75rem;
+    text-align: center;
 }
 
-.cal-popup-wishlist-btn {
+.wishlist-btn {
     color: #888;
+    min-width: 7em;
+    text-align: center;
 }
 
-.cal-popup-wishlist-btn:hover {
+.wishlist-btn:hover {
     color: #e74c3c;
     background-color: #fef0ef;
 }
 
-.cal-popup-wishlist-btn.wishlisted {
+.wishlist-btn.wishlisted {
     color: #e74c3c;
     background-color: #fef0ef;
 }

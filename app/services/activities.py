@@ -229,6 +229,29 @@ async def get_wishlist(
     return []
 
 
+async def get_button_status_batch(
+    api_client: ActiveNetClient,
+    activity_ids: list[int],
+) -> dict[int, activity_models.ButtonStatus]:
+    """Fetch button status for multiple activities in parallel."""
+    if not activity_ids:
+        return {}
+
+    async with httpx.AsyncClient() as http_client:
+        tasks = [
+            get_button_status(api_client, aid, http_client=http_client)
+            for aid in activity_ids
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    statuses: dict[int, activity_models.ButtonStatus] = {}
+    for aid, result in zip(activity_ids, results):
+        if isinstance(result, activity_models.ButtonStatus):
+            statuses[aid] = result
+
+    return statuses
+
+
 async def get_button_status(
     api_client: ActiveNetClient,
     activity_id: int,

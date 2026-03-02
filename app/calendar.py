@@ -7,10 +7,10 @@ request-handling concerns.
 
 import calendar
 import datetime
-import typing
 import urllib.parse
 
 from app.models import activity as activity_models
+from app.models import calendar as calendar_models
 
 # ---------------------------------------------------------------------------
 # Presentation constants
@@ -51,43 +51,6 @@ WEEKDAY_ABBR_MAP: dict[str, int] = {
     "sat": 5,
     "sun": 6,
 }
-
-# ---------------------------------------------------------------------------
-# TypedDicts for the calendar data structures
-# ---------------------------------------------------------------------------
-
-
-class CalendarEvent(typing.TypedDict):
-    id: int
-    name: str
-    color: str
-    location: str
-    ages: str
-    total_open: int | None
-    action_link_href: str
-    action_link_label: str
-    date_range_start: str
-    date_range_end: str
-    starting_time: str
-    ending_time: str
-    number: str
-    wish_list_id: int
-
-
-class CalendarDay(typing.TypedDict):
-    day: int
-    in_month: bool
-    iso_date: str
-    is_today: bool
-    events: list[CalendarEvent]
-
-
-class CalendarMonth(typing.TypedDict):
-    year: int
-    month: int
-    name: str
-    weeks: list[list[CalendarDay]]
-
 
 # ---------------------------------------------------------------------------
 # Date helpers
@@ -205,12 +168,13 @@ def activity_meeting_dates(
 def build_calendar_data(
     activities: list[activity_models.ActivityItem],
     meeting_dates: dict[int, activity_models.MeetingAndRegistrationDates],
-) -> list[CalendarMonth]:
+    button_statuses: dict[int, activity_models.ButtonStatus] | None = None,
+) -> list[calendar_models.CalendarMonth]:
     """Build a list of month dicts for the calendar template.
 
-    Each month dict has ``year``, ``month``, ``name``, and ``weeks``.
-    Each week is a list of 7 :class:`CalendarDay` dicts, and each day
-    carries a list of :class:`CalendarEvent` dicts.
+    Each month has ``year``, ``month``, ``name``, and ``weeks``.
+    Each week is a list of 7 :class:`CalendarDay` objects, and each day
+    carries a list of :class:`CalendarEvent` objects.
     """
     today = datetime.date.today()
 
@@ -218,7 +182,7 @@ def build_calendar_data(
         return []
 
     # Map date -> list[event] and track date bounds
-    event_by_date: dict[datetime.date, list[CalendarEvent]] = {}
+    event_by_date: dict[datetime.date, list[calendar_models.CalendarEvent]] = {}
     earliest_date: datetime.date | None = None
     latest_date: datetime.date | None = None
 
@@ -245,25 +209,24 @@ def build_calendar_data(
         starting_time = unique_slots[0][0][:5] if unique_slots else ""
         ending_time = unique_slots[0][1][:5] if unique_slots else ""
 
-        event = CalendarEvent(
-            id=activity.id,
-            name=activity.name,
+        # Prefer button status (has correct enroll/waitlist info) over
+        # the search-result action_link which may be empty for waitlisted
+        # activities.
+        btn = (
+            button_statuses.get(activity.id) if button_statuses else None
+        )
+        btn_link = btn.action_link if btn else None
+        if not btn_link or not btn_link.href:
+            btn_link = activity.action_link
+
+        event_data = activity.model_dump()
+        if btn_link:
+            event_data["action_link"] = btn_link
+        event = calendar_models.CalendarEvent(
+            **event_data,
             color=color,
-            location=activity.location.label if activity.location else "",
-            ages=activity.ages,
-            total_open=activity.total_open,
-            action_link_href=(
-                activity.action_link.href if activity.action_link else ""
-            ),
-            action_link_label=(
-                activity.action_link.label if activity.action_link else "Enroll"
-            ),
-            date_range_start=activity.date_range_start,
-            date_range_end=activity.date_range_end,
             starting_time=starting_time,
             ending_time=ending_time,
-            number=activity.number,
-            wish_list_id=activity.wish_list_id,
         )
 
         all_dates = activity_meeting_dates(activity, meeting_info)
@@ -285,7 +248,7 @@ def build_calendar_data(
     start_month = earliest_date.replace(day=1)
     end_month = latest_date.replace(day=1)
 
-    months: list[CalendarMonth] = []
+    months: list[calendar_models.CalendarMonth] = []
     cur_month = start_month
     while cur_month <= end_month:
         year = cur_month.year
@@ -295,24 +258,21 @@ def build_calendar_data(
         # calendar.monthcalendar returns weeks where each week is 7 ints;
         # 0 means the day is outside this month.
         cal = calendar.monthcalendar(year, month)
-        weeks: list[list[CalendarDay]] = []
+        weeks: list[list[calendar_models.CalendarDay]] = []
         for week in cal:
-            week_days: list[CalendarDay] = []
+            week_days: list[calendar_models.CalendarDay] = []
             for day_num in week:
                 if day_num == 0:
                     week_days.append(
-                        CalendarDay(
+                        calendar_models.CalendarDay(
                             day=0,
                             in_month=False,
-                            iso_date="",
-                            is_today=False,
-                            events=[],
                         )
                     )
                 else:
                     d = datetime.date(year, month, day_num)
                     week_days.append(
-                        CalendarDay(
+                        calendar_models.CalendarDay(
                             day=day_num,
                             in_month=True,
                             iso_date=d.isoformat(),
@@ -323,7 +283,7 @@ def build_calendar_data(
             weeks.append(week_days)
 
         months.append(
-            CalendarMonth(
+            calendar_models.CalendarMonth(
                 year=year,
                 month=month,
                 name=month_name,

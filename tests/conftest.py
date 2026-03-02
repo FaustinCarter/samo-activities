@@ -74,6 +74,7 @@ def sample_activity_item() -> ActivityItem:
         action_link=ActionLink(
             href="https://anc.apm.activecommunities.com/enroll/12345",
             label="Enroll Now",
+            type=3,
         ),
         detail_url="/activity/12345",
     )
@@ -182,6 +183,7 @@ def sample_button_status() -> ButtonStatus:
         action_link=ActionLink(
             href="https://anc.apm.activecommunities.com/enroll/12345",
             label="Enroll Now",
+            type=3,
         ),
         time_remaining=0,
         notification="",

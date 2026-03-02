@@ -231,10 +231,10 @@ class TestBuildCalendarData:
         result = build_calendar_data(activities, meeting_dates)
 
         assert len(result) == 1
-        assert result[0]["year"] == 2026
-        assert result[0]["month"] == 3
-        assert result[0]["name"] == "March 2026"
-        assert "weeks" in result[0]
+        assert result[0].year == 2026
+        assert result[0].month == 3
+        assert result[0].name == "March 2026"
+        assert result[0].weeks
 
     def test_multiple_months_spanned(self):
         """Activity spanning months creates multiple month entries."""
@@ -262,7 +262,7 @@ class TestBuildCalendarData:
 
         # Should have March, April, May (all have Mondays within the range)
         assert len(result) == 3
-        month_names = [m["name"] for m in result]
+        month_names = [m.name for m in result]
         assert "March 2026" in month_names
         assert "April 2026" in month_names
         assert "May 2026" in month_names
@@ -294,16 +294,16 @@ class TestBuildCalendarData:
         # Find March 16 in the calendar
         march = result[0]
         found = False
-        for week in march["weeks"]:
+        for week in march.weeks:
             for day in week:
-                if day["day"] == 16 and day["in_month"]:
-                    assert len(day["events"]) == 1
-                    assert day["events"][0]["name"] == "Monday Class"
+                if day.day == 16 and day.in_month:
+                    assert len(day.events) == 1
+                    assert day.events[0].name == "Monday Class"
                     found = True
         assert found, "March 16 should have the event"
 
     def test_event_contains_required_fields(self):
-        """Event dicts contain all required fields for calendar display."""
+        """Event objects contain all required fields for calendar display."""
         activities = [
             ActivityItem(
                 id=123,
@@ -342,29 +342,29 @@ class TestBuildCalendarData:
         march = result[0]
         # Find the day with the event
         event = None
-        for week in march["weeks"]:
+        for week in march.weeks:
             for day in week:
-                if day.get("events"):
-                    event = day["events"][0]
+                if day.events:
+                    event = day.events[0]
                     break
             if event:
                 break
 
         assert event is not None
-        assert event["id"] == 123
-        assert event["name"] == "Test Activity"
-        assert event["number"] == "1234.567"
-        assert event["location"] == "Test Gym"
-        assert event["ages"] == "8-12 years"
-        assert event["total_open"] == 10
-        assert event["action_link_href"] == "https://example.com/enroll"
-        assert event["action_link_label"] == "Sign Up"
-        assert event["starting_time"] == "09:00"
-        assert event["ending_time"] == "10:00"
-        assert "color" in event  # Color assigned from PILL_COLORS
+        assert event.id == 123
+        assert event.name == "Test Activity"
+        assert event.number == "1234.567"
+        assert event.location.label == "Test Gym"
+        assert event.ages == "8-12 years"
+        assert event.total_open == 10
+        assert event.action_link.href == "https://example.com/enroll"
+        assert event.action_link.label == "Sign Up"
+        assert event.starting_time == "09:00"
+        assert event.ending_time == "10:00"
+        assert event.color  # Color assigned from PILL_COLORS
 
     def test_event_contains_wish_list_id(self):
-        """Event dicts include the wish_list_id from the activity."""
+        """Event objects include the wish_list_id from the activity."""
         activities = [
             ActivityItem(
                 id=1,
@@ -390,16 +390,16 @@ class TestBuildCalendarData:
 
         march = result[0]
         event = None
-        for week in march["weeks"]:
+        for week in march.weeks:
             for day in week:
-                if day.get("events"):
-                    event = day["events"][0]
+                if day.events:
+                    event = day.events[0]
                     break
             if event:
                 break
 
         assert event is not None
-        assert event["wish_list_id"] == 42
+        assert event.wish_list_id == 42
 
     def test_event_wish_list_id_defaults_to_zero(self):
         """Event wish_list_id is 0 when activity is not wishlisted."""
@@ -427,16 +427,16 @@ class TestBuildCalendarData:
 
         march = result[0]
         event = None
-        for week in march["weeks"]:
+        for week in march.weeks:
             for day in week:
-                if day.get("events"):
-                    event = day["events"][0]
+                if day.events:
+                    event = day.events[0]
                     break
             if event:
                 break
 
         assert event is not None
-        assert event["wish_list_id"] == 0
+        assert event.wish_list_id == 0
 
     def test_multiple_activities_get_different_colors(self):
         """Different activities get assigned different colors."""
@@ -461,10 +461,10 @@ class TestBuildCalendarData:
 
         march = result[0]
         colors = set()
-        for week in march["weeks"]:
+        for week in march.weeks:
             for day in week:
-                for event in day.get("events", []):
-                    colors.add(event["color"])
+                for event in day.events:
+                    colors.add(event.color)
 
         # Should have 5 different colors
         assert len(colors) == 5
@@ -487,7 +487,7 @@ class TestBuildCalendarData:
         result = build_calendar_data(activities, meeting_dates)
 
         for month in result:
-            for week in month["weeks"]:
+            for week in month.weeks:
                 assert len(week) == 7
 
     def test_out_of_month_days_marked(self):
@@ -508,9 +508,9 @@ class TestBuildCalendarData:
         result = build_calendar_data(activities, meeting_dates)
 
         march = result[0]
-        first_week = march["weeks"][0]
+        first_week = march.weeks[0]
 
         # March 2026 starts on Sunday, so first day of week (Monday) is out of month
         # Check that at least one day in first week is out of month
-        out_of_month_days = [d for d in first_week if not d["in_month"]]
+        out_of_month_days = [d for d in first_week if not d.in_month]
         assert len(out_of_month_days) > 0

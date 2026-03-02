@@ -407,7 +407,7 @@ class TestActivityDetailWishlist:
 
         assert response.status_code == 200
         assert "detail-wishlist-btn" in response.text
-        assert "cal-popup-wishlist-btn" in response.text
+        assert "wishlist-btn" in response.text
         assert "Wishlist" in response.text
 
     @respx.mock

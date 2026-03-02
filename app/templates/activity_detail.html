@@ -234,31 +234,6 @@
         </section>
         {% endif %}
 
-        {# --- Instructors --- #}
-        {% if detail.instructors %}
-        <section class="detail-section">
-            <h2>Instructor{% if detail.instructors|length > 1 %}s{% endif %}</h2>
-            {% for instructor in detail.instructors %}
-            <div class="instructor">
-                <p class="instructor-name">
-                    {{ instructor.first_name }} {{ instructor.last_name }}
-                    {% if instructor.is_primary_instructor and detail.instructors|length > 1 %}
-                    <span class="instructor-primary">(Primary)</span>
-                    {% endif %}
-                </p>
-                {% if instructor.bio %}
-                <p class="instructor-bio">{{ instructor.bio }}</p>
-                {% endif %}
-                {% if instructor.email %}
-                <p class="instructor-email">
-                    <a href="mailto:{{ instructor.email }}">{{ instructor.email }}</a>
-                </p>
-                {% endif %}
-            </div>
-            {% endfor %}
-        </section>
-        {% endif %}
-
         {# --- Description --- #}
         {% if detail.catalog_description or detail.online_notes or detail.user_notes %}
         <section class="detail-section">
@@ -283,12 +258,37 @@
         </section>
         {% endif %}
 
+        {# --- Instructors --- #}
+        {% if detail.instructors %}
+        <section class="detail-section">
+            <h2>Instructor{% if detail.instructors|length > 1 %}s{% endif %}</h2>
+            {% for instructor in detail.instructors %}
+            <div class="instructor">
+                <p class="instructor-name">
+                    {{ instructor.first_name }} {{ instructor.last_name }}
+                    {% if instructor.is_primary_instructor and detail.instructors|length > 1 %}
+                    <span class="instructor-primary">(Primary)</span>
+                    {% endif %}
+                </p>
+                {% if instructor.bio %}
+                <p class="instructor-bio">{{ instructor.bio|sanitize_html|safe }}</p>
+                {% endif %}
+                {% if instructor.email %}
+                <p class="instructor-email">
+                    <a href="mailto:{{ instructor.email }}">{{ instructor.email }}</a>
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
     </div>
 
     {# --- Action buttons --- #}
     <div class="detail-actions">
         {% if api_client.is_authenticated %}
-        <button class="btn cal-popup-wishlist-btn{% if detail.wish_list_id %} wishlisted{% endif %}"
+        <button class="btn wishlist-btn{% if detail.wish_list_id %} wishlisted{% endif %}"
                 id="detail-wishlist-btn"
                 data-activity-id="{{ detail.activity_id }}"
                 data-wish-list-id="{{ detail.wish_list_id }}">
@@ -296,51 +296,11 @@
         </button>
         {% endif %}
         {% if button_status and button_status.action_link and button_status.action_link.href %}
-        <a href="{{ button_status.action_link.href }}" class="btn btn-enroll btn-enroll--large" target="_blank">
+        <a href="{{ button_status.action_link.href }}" class="btn {% if button_status.action_link.type == 3 %}btn-enroll{% else %}btn-waitlist{% endif %}" target="_blank">
             {{ button_status.action_link.label or "Enroll Now" }}
         </a>
         {% endif %}
     </div>
 
 </div>
-<script>
-(function() {
-    var btn = document.getElementById('detail-wishlist-btn');
-    if (!btn) return;
-
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-
-        var activityId = btn.getAttribute('data-activity-id');
-        var wishListId = parseInt(btn.getAttribute('data-wish-list-id'), 10) || 0;
-
-        if (wishListId > 0) {
-            fetch('/api/wishlist/' + wishListId, { method: 'DELETE' })
-                .then(function(res) {
-                    if (!res.ok) throw new Error(res.status);
-                    return res.json();
-                })
-                .then(function() {
-                    btn.setAttribute('data-wish-list-id', '0');
-                    btn.classList.remove('wishlisted');
-                    btn.textContent = '\u2661 Wishlist';
-                })
-                .catch(function() {});
-        } else {
-            fetch('/api/wishlist/' + activityId, { method: 'POST' })
-                .then(function(res) {
-                    if (!res.ok) throw new Error(res.status);
-                    return res.json();
-                })
-                .then(function(data) {
-                    var newId = data.wish_list_id || 0;
-                    btn.setAttribute('data-wish-list-id', String(newId));
-                    btn.classList.add('wishlisted');
-                    btn.textContent = '\u2665 Wishlisted';
-                })
-                .catch(function() {});
-        }
-    });
-})();
-</script>
 {% endblock %}

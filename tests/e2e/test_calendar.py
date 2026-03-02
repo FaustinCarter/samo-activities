@@ -209,7 +209,7 @@ class TestActivityDetailPage:
         """Detail page has enrollment button."""
         page.goto(f"{server_url}/activity/12345")
 
-        enroll_btn = page.locator(".btn-enroll--large")
+        enroll_btn = page.locator(".detail-actions .btn-enroll")
         expect(enroll_btn).to_be_visible()
         expect(enroll_btn).to_contain_text("Enroll Now")
 
