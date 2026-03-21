@@ -382,14 +382,8 @@ class TestActivityDetailWishlist:
         assert "Log in to save to wishlist" in response.text
 
     @respx.mock
-    def test_wishlist_button_shown_when_authenticated(self, client):
+    def test_wishlist_button_shown_when_authenticated(self, authenticated_client):
         """Logged-in users see a wishlist button on the detail page."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         detail_json = {
             "headers": {"response_code": "0000"},
             "body": {
@@ -403,9 +397,7 @@ class TestActivityDetailWishlist:
         }
         self._mock_detail_endpoints(12345, detail_json)
 
-        response = client.get(
-            "/activity/12345", cookies={"samo_session": session_id}
-        )
+        response = authenticated_client.get("/activity/12345")
 
         assert response.status_code == 200
         assert "detail-wishlist-btn" in response.text
@@ -413,14 +405,8 @@ class TestActivityDetailWishlist:
         assert "Wishlist" in response.text
 
     @respx.mock
-    def test_wishlisted_detail_shows_filled_state(self, client):
+    def test_wishlisted_detail_shows_filled_state(self, authenticated_client):
         """A wishlisted activity shows the filled/wishlisted state."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         detail_json = {
             "headers": {"response_code": "0000"},
             "body": {
@@ -434,9 +420,7 @@ class TestActivityDetailWishlist:
         }
         self._mock_detail_endpoints(12345, detail_json)
 
-        response = client.get(
-            "/activity/12345", cookies={"samo_session": session_id}
-        )
+        response = authenticated_client.get("/activity/12345")
 
         assert response.status_code == 200
         assert "wishlisted" in response.text
@@ -461,14 +445,8 @@ class TestWishlistApiRoutes:
         assert response.status_code == 401
 
     @respx.mock
-    def test_add_to_wishlist_success(self, client):
+    def test_add_to_wishlist_success(self, authenticated_client):
         """POST /api/wishlist/{id} returns wish_list_id when authenticated."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         # Mock the wishlist API
         respx.post(f"{settings.base_url}/wishlist").mock(
             return_value=Response(
@@ -480,23 +458,14 @@ class TestWishlistApiRoutes:
             )
         )
 
-        response = client.post(
-            "/api/wishlist/12345",
-            cookies={"samo_session": session_id},
-        )
+        response = authenticated_client.post("/api/wishlist/12345")
 
         assert response.status_code == 200
         assert response.json()["wish_list_id"] == "789"
 
     @respx.mock
-    def test_remove_from_wishlist_success(self, client):
+    def test_remove_from_wishlist_success(self, authenticated_client):
         """DELETE /api/wishlist/{id} returns success when authenticated."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.delete(f"{settings.base_url}/wishlist/789").mock(
             return_value=Response(
                 200,
@@ -507,49 +476,28 @@ class TestWishlistApiRoutes:
             )
         )
 
-        response = client.delete(
-            "/api/wishlist/789",
-            cookies={"samo_session": session_id},
-        )
+        response = authenticated_client.delete("/api/wishlist/789")
 
         assert response.status_code == 200
         assert response.json()["success"] is True
 
     @respx.mock
-    def test_add_to_wishlist_upstream_failure(self, client):
+    def test_add_to_wishlist_upstream_failure(self, authenticated_client):
         """POST /api/wishlist/{id} returns 500 when upstream fails."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.post(f"{settings.base_url}/wishlist").mock(return_value=Response(500))
 
-        response = client.post(
-            "/api/wishlist/12345",
-            cookies={"samo_session": session_id},
-        )
+        response = authenticated_client.post("/api/wishlist/12345")
 
         assert response.status_code == 500
 
     @respx.mock
-    def test_remove_from_wishlist_upstream_failure(self, client):
+    def test_remove_from_wishlist_upstream_failure(self, authenticated_client):
         """DELETE /api/wishlist/{id} returns 500 when upstream fails."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.delete(f"{settings.base_url}/wishlist/789").mock(
             return_value=Response(500)
         )
 
-        response = client.delete(
-            "/api/wishlist/789",
-            cookies={"samo_session": session_id},
-        )
+        response = authenticated_client.delete("/api/wishlist/789")
 
         assert response.status_code == 500
 
@@ -579,14 +527,10 @@ class TestWishlistBrowseIntegration:
         assert "Youth Swim Lessons" in response.text
 
     @respx.mock
-    def test_wishlist_only_fetches_wishlist_when_authenticated(self, client):
+    def test_wishlist_only_fetches_wishlist_when_authenticated(
+        self, authenticated_client
+    ):
         """wishlist_only=true fetches from wishlist endpoint for logged-in users."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(
                 200,
@@ -610,10 +554,7 @@ class TestWishlistBrowseIntegration:
             )
         )
 
-        response = client.get(
-            "/?wishlist_only=true",
-            cookies={"samo_session": session_id},
-        )
+        response = authenticated_client.get("/?wishlist_only=true")
 
         assert response.status_code == 200
         assert "My Fav Activity" in response.text
@@ -665,14 +606,8 @@ class TestWishlistTemplateRendering:
         assert "Log in to use wishlist" in response.text
 
     @respx.mock
-    def test_heart_buttons_shown_when_authenticated(self, client):
+    def test_heart_buttons_shown_when_authenticated(self, authenticated_client):
         """Logged-in users see wishlist heart buttons on activity cards."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(
                 200,
@@ -709,20 +644,14 @@ class TestWishlistTemplateRendering:
             )
         )
 
-        response = client.get("/", cookies={"samo_session": session_id})
+        response = authenticated_client.get("/")
 
         assert response.status_code == 200
         assert "wishlist-btn" in response.text
 
     @respx.mock
-    def test_wishlist_checkbox_shown_when_authenticated(self, client):
+    def test_wishlist_checkbox_shown_when_authenticated(self, authenticated_client):
         """Logged-in users see the 'View wishlist only' checkbox."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(
                 200,
@@ -750,20 +679,14 @@ class TestWishlistTemplateRendering:
             )
         )
 
-        response = client.get("/", cookies={"samo_session": session_id})
+        response = authenticated_client.get("/")
 
         assert response.status_code == 200
         assert "View wishlist only" in response.text
 
     @respx.mock
-    def test_wishlisted_card_has_filled_heart(self, client):
+    def test_wishlisted_card_has_filled_heart(self, authenticated_client):
         """A wishlisted activity card has the 'wishlisted' class."""
-        landing = client.get("/login")
-        session_id = landing.cookies["samo_session"]
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(
                 200,
@@ -800,7 +723,7 @@ class TestWishlistTemplateRendering:
             )
         )
 
-        response = client.get("/", cookies={"samo_session": session_id})
+        response = authenticated_client.get("/")
 
         assert response.status_code == 200
         assert "wishlisted" in response.text

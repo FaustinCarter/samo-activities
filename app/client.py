@@ -31,6 +31,10 @@ class ActiveNetClient:
     session to an authenticated one.  Calling :meth:`logout` clears all session
     state.
 
+    A single :class:`httpx.AsyncClient` is held for the lifetime of the
+    instance so that all API requests reuse TCP connections (and benefit from
+    HTTP/2 multiplexing when available).
+
     **Password handling**: The ``login`` method accepts a plaintext password as
     a function parameter, passes it to the upstream API in a single HTTPS POST
     request, and never stores it on the instance.  Once ``login`` returns, the
@@ -52,6 +56,9 @@ class ActiveNetClient:
             "?onlineSiteId=0&activity_select_param=2&viewMode=list"
         )
 
+        # Persistent HTTP client — reuses connections across requests.
+        self._http_client = httpx.AsyncClient()
+
     @property
     def is_authenticated(self) -> bool:
         """Whether this client has a logged-in user session."""
@@ -68,6 +75,10 @@ class ActiveNetClient:
         as ``window.__csrfToken = "<uuid>"``.  This method performs a GET
         request (following redirects) to that page, extracts the token via
         regex, and captures all cookies set by the response chain.
+
+        Uses a temporary client with ``follow_redirects=True`` because the
+        sign-in page issues redirects whose cookies must be captured from
+        the jar.  Subsequent API calls use the persistent client.
         """
         signin_url = (
             f"{config.settings.base_site_url}/signin"
@@ -120,8 +131,11 @@ class ActiveNetClient:
             "ak_properties": None,
         }
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=headers, params=params, json=body)
+        response = await self._http_client.post(
+            url, headers=headers, params=params, json=body
+        )
+        # Prevent httpx's jar from replaying cookies we manage manually.
+        self._http_client.cookies.clear()
 
         # After this point ``password`` is no longer referenced — the local
         # variable will be garbage-collected.
@@ -195,18 +209,16 @@ class ActiveNetClient:
         self,
         path: str,
         params: dict | None = None,
-        client: httpx.AsyncClient | None = None,
     ) -> dict:
         """Make a GET request to the API."""
         url = f"{self.base_url}{path}"
         headers = self._get_headers("GET")
         final_params = self._get_params(params)
 
-        if client:
-            response = await client.get(url, headers=headers, params=final_params)
-        else:
-            async with httpx.AsyncClient() as c:
-                response = await c.get(url, headers=headers, params=final_params)
+        response = await self._http_client.get(
+            url, headers=headers, params=final_params
+        )
+        self._http_client.cookies.clear()
 
         response.raise_for_status()
         data = response.json()
@@ -219,22 +231,16 @@ class ActiveNetClient:
         json_body: dict,
         params: dict | None = None,
         page_info: dict | None = None,
-        client: httpx.AsyncClient | None = None,
     ) -> dict:
         """Make a POST request to the API."""
         url = f"{self.base_url}{path}"
         headers = self._get_headers("POST", page_info=page_info)
         final_params = self._get_params(params)
 
-        if client:
-            response = await client.post(
-                url, headers=headers, params=final_params, json=json_body
-            )
-        else:
-            async with httpx.AsyncClient() as c:
-                response = await c.post(
-                    url, headers=headers, params=final_params, json=json_body
-                )
+        response = await self._http_client.post(
+            url, headers=headers, params=final_params, json=json_body
+        )
+        self._http_client.cookies.clear()
 
         response.raise_for_status()
         data = response.json()
@@ -246,22 +252,16 @@ class ActiveNetClient:
         path: str,
         params: dict | None = None,
         page_info: dict | None = None,
-        client: httpx.AsyncClient | None = None,
     ) -> dict:
         """Make a DELETE request to the API."""
         url = f"{self.base_url}{path}"
         headers = self._get_headers("DELETE", page_info=page_info)
         final_params = self._get_params(params)
 
-        if client:
-            response = await client.request(
-                "DELETE", url, headers=headers, params=final_params
-            )
-        else:
-            async with httpx.AsyncClient() as c:
-                response = await c.request(
-                    "DELETE", url, headers=headers, params=final_params
-                )
+        response = await self._http_client.request(
+            "DELETE", url, headers=headers, params=final_params
+        )
+        self._http_client.cookies.clear()
 
         response.raise_for_status()
         data = response.json()

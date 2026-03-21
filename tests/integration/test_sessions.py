@@ -120,20 +120,10 @@ class TestLoginRoutes:
         assert "samo_session" in response.cookies
 
     @respx.mock
-    def test_login_page_redirects_when_authenticated(self, client):
+    def test_login_page_redirects_when_authenticated(self, authenticated_client):
         """GET /login redirects to / if the user is already logged in."""
-        # First, get a session.
-        first = client.get("/login")
-        session_id = first.cookies["samo_session"]
-
-        # Manually mark the client as authenticated.
-        session_manager = client.app.state.session_manager
-        api_client = session_manager.get_client(session_id)
-        api_client.access_token = "fake-token"
-
-        response = client.get(
+        response = authenticated_client.get(
             "/login",
-            cookies={"samo_session": session_id},
             follow_redirects=False,
         )
 
@@ -339,3 +329,68 @@ class TestSessionManager:
         """destroy_session does not raise for an unknown session ID."""
         manager = SessionManager()
         manager.destroy_session("nonexistent")  # should not raise
+
+    async def test_active_count_tracks_sessions(self):
+        """active_count reflects the number of live sessions."""
+        manager = SessionManager()
+        assert manager.active_count == 0
+
+        sid1, _ = await manager.create_session()
+        assert manager.active_count == 1
+
+        await manager.create_session()
+        assert manager.active_count == 2
+
+        manager.destroy_session(sid1)
+        assert manager.active_count == 1
+
+
+class TestSessionEviction:
+    """Tests for session TTL expiration and max-count eviction."""
+
+    async def test_expired_session_returns_none(self):
+        """get_client returns None for a session that has exceeded the TTL."""
+        manager = SessionManager(ttl_seconds=0)  # expire immediately
+        session_id, _ = await manager.create_session()
+
+        # Session should be expired on the next get_client call.
+        assert manager.get_client(session_id) is None
+        assert manager.active_count == 0
+
+    async def test_expired_session_clears_client_state(self):
+        """Evicted expired sessions have their client state cleared."""
+        manager = SessionManager(ttl_seconds=0)
+        _, client = await manager.create_session()
+        client.access_token = "fake-token"
+
+        # Trigger eviction by creating another session.
+        await manager.create_session()
+
+        assert client.access_token is None
+
+    async def test_max_count_evicts_oldest(self):
+        """When max_count is exceeded, the oldest session is evicted."""
+        manager = SessionManager(max_count=2)
+        sid1, client1 = await manager.create_session()
+        sid2, _ = await manager.create_session()
+
+        # Touch sid2 so it's newer, then create a 3rd which should evict sid1.
+        manager.get_client(sid2)
+        sid3, _ = await manager.create_session()
+
+        assert manager.active_count == 2
+        assert manager.get_client(sid1) is None  # evicted (oldest)
+        assert client1.access_token is None  # logout was called
+        assert manager.get_client(sid3) is not None  # newest kept
+
+    async def test_get_client_touches_session(self):
+        """Accessing a session updates its last-accessed time."""
+        manager = SessionManager(ttl_seconds=1000)
+        session_id, _ = await manager.create_session()
+
+        # Access should succeed and keep the session alive.
+        client = manager.get_client(session_id)
+        assert client is not None
+
+        # Still alive on subsequent access.
+        assert manager.get_client(session_id) is not None

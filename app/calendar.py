@@ -212,9 +212,7 @@ def build_calendar_data(
         # Prefer button status (has correct enroll/waitlist info) over
         # the search-result action_link which may be empty for waitlisted
         # activities.
-        btn = (
-            button_statuses.get(activity.id) if button_statuses else None
-        )
+        btn = button_statuses.get(activity.id) if button_statuses else None
         btn_link = btn.action_link if btn else None
         if not btn_link or not btn_link.href:
             btn_link = activity.action_link

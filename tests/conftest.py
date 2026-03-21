@@ -57,6 +57,36 @@ def client(app):
 
 
 @pytest.fixture
+def authenticated_client(client):
+    """A test client whose session is already authenticated.
+
+    Hits ``/login`` to establish a session, then sets
+    ``access_token`` on the underlying :class:`ActiveNetClient` so that
+    ``is_authenticated`` returns ``True``.  The session cookie is stored
+    on the ``TestClient`` so every subsequent request automatically
+    carries it.
+
+    Returns the ``TestClient`` instance.  The ``ActiveNetClient`` for the
+    session is available at ``client.app.state.session_manager.get_client(…)``
+    if a test needs to inspect it, but most tests can just use the client
+    directly.
+    """
+    # Establish a session via middleware.
+    landing = client.get("/login")
+    session_id = landing.cookies["samo_session"]
+
+    # Mark the session as authenticated.
+    session_manager = client.app.state.session_manager
+    api_client = session_manager.get_client(session_id)
+    api_client.access_token = "fake-token"
+
+    # Persist the cookie on the TestClient so callers don't have to.
+    client.cookies.set("samo_session", session_id)
+
+    return client
+
+
+@pytest.fixture
 def sample_activity_item() -> ActivityItem:
     """A single sample activity for testing."""
     return ActivityItem(

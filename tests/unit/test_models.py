@@ -195,9 +195,7 @@ class TestActivityDetail:
 
     def test_wishlist_fields_set(self):
         """Wishlist fields can be set for a logged-in user."""
-        detail = ActivityDetail(
-            activity_id=123, show_wish_list=True, wish_list_id=456
-        )
+        detail = ActivityDetail(activity_id=123, show_wish_list=True, wish_list_id=456)
         assert detail.show_wish_list is True
         assert detail.wish_list_id == 456
 

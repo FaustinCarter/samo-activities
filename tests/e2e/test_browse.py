@@ -45,7 +45,9 @@ class TestHomepage:
         """Activity cards show available spots."""
         page.goto(server_url)
 
-        expect(page.locator(".activity-spots").first).to_contain_text("5 of 10 spots open")
+        expect(page.locator(".activity-spots").first).to_contain_text(
+            "5 of 10 spots open"
+        )
 
     def test_results_count_shown(self, page: Page, server_url: str):
         """Results count is displayed."""
