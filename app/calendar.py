@@ -20,26 +20,26 @@ from app.models import calendar as calendar_models
 # Each activity gets a stable color by (index % len(PILL_COLORS)).
 # With 20 colors and a default page size of 20, each activity gets a unique color.
 PILL_COLORS = [
-    "#1a5276",  # navy
-    "#117a65",  # teal
-    "#784212",  # brown
-    "#6c3483",  # purple
-    "#1a618f",  # blue
-    "#922b21",  # red
-    "#7d6608",  # olive
-    "#1e8449",  # green
-    "#d35400",  # orange
-    "#2e4053",  # slate
-    "#148f77",  # cyan
-    "#b03a2e",  # crimson
-    "#1f618d",  # steel blue
-    "#7b241c",  # maroon
-    "#196f3d",  # forest
-    "#a04000",  # rust
-    "#4a235a",  # plum
-    "#0e6655",  # dark teal
-    "#7e5109",  # bronze
-    "#2874a6",  # cobalt
+    "#5a7d8a",  # blue-gray (primary)
+    "#3a8a6a",  # seafoam
+    "#8a6e5e",  # warm stone
+    "#7a6a8a",  # muted plum
+    "#4a7a8a",  # ocean
+    "#9a6858",  # clay
+    "#6a8a5a",  # sage
+    "#5a8a7a",  # teal mist
+    "#8a7a5a",  # khaki
+    "#4a6a7a",  # slate
+    "#7a8a6a",  # moss
+    "#8a5a6a",  # dusty rose
+    "#5a8a8a",  # dark cyan
+    "#7a5a5a",  # muted maroon
+    "#5a7a6a",  # forest mist
+    "#9a7a4a",  # amber
+    "#6a5a7a",  # lavender gray
+    "#4a8a7a",  # dark seafoam
+    "#8a7a6a",  # driftwood
+    "#6a7a8a",  # cool slate
 ]
 
 WEEKDAY_ABBR_MAP: dict[str, int] = {
