@@ -15,6 +15,7 @@ class CalendarEvent(activity_models.ActivityItem):
     color: str = ""
     starting_time: str = ""
     ending_time: str = ""
+    notification: str = ""
 
     def popup_dict(self, authenticated: bool = False) -> dict:
         """Return a flat dict of fields needed by the calendar popup JS.
@@ -37,6 +38,7 @@ class CalendarEvent(activity_models.ActivityItem):
                 self.action_link.label if self.action_link else "Enroll"
             ),
             "action_link_type": self.action_link.type if self.action_link else 0,
+            "notification": self.notification,
             "date_range_start": self.date_range_start,
             "date_range_end": self.date_range_end,
             "starting_time": self.starting_time,

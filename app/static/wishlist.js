@@ -13,6 +13,12 @@
 
 /* exported toggleWishlist */
 
+function setWishlistContent(btn, isOn) {
+    var iconOnly = btn.classList.contains('wishlist-btn--icon');
+    var heart = isOn ? '\u2665' : '\u2661';
+    btn.textContent = iconOnly ? heart : heart + (isOn ? ' Wishlisted' : ' Wishlist');
+}
+
 function toggleWishlist(btn, afterToggle) {
     var activityId = btn.getAttribute('data-activity-id');
     var wishListId = parseInt(btn.getAttribute('data-wish-list-id'), 10) || 0;
@@ -26,7 +32,7 @@ function toggleWishlist(btn, afterToggle) {
             .then(function () {
                 btn.setAttribute('data-wish-list-id', '0');
                 btn.classList.remove('wishlisted');
-                btn.textContent = '\u2661 Wishlist';
+                setWishlistContent(btn, false);
                 if (afterToggle) afterToggle(activityId, 0);
             })
             .catch(function () {});
@@ -40,7 +46,7 @@ function toggleWishlist(btn, afterToggle) {
                 var newId = data.wish_list_id || 0;
                 btn.setAttribute('data-wish-list-id', String(newId));
                 btn.classList.add('wishlisted');
-                btn.textContent = '\u2665 Wishlisted';
+                setWishlistContent(btn, true);
                 if (afterToggle) afterToggle(activityId, newId);
             })
             .catch(function () {});

@@ -12,3 +12,5 @@ wheels/
 # Local settings
 .env
 .vscode
+DEPLOY.md
+mockups

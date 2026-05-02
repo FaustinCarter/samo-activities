@@ -117,6 +117,10 @@
                 '<a href="' + escapeHtml(eventData.action_link_href) + '" ' +
                 'class="btn ' + enrollClass + '" target="_blank" rel="noopener">' +
                 escapeHtml(eventData.action_link_label || 'Enroll') + '</a>';
+        } else if (eventData.notification) {
+            actionsHtml +=
+                '<span class="cal-popup-closed">' +
+                escapeHtml(eventData.notification) + '</span>';
         }
 
         content.innerHTML =

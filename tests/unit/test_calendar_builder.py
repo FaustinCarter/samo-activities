@@ -55,18 +55,6 @@ class TestBuildQueryString:
         assert "center_ids=10" in result
         assert "center_ids=20" in result
 
-    def test_with_show_full_details(self):
-        """Include show_full_details flag."""
-        params = {"show_full_details": True}
-        result = build_query_string(params, 1)
-        assert "show_full_details=true" in result
-
-    def test_show_full_details_false_not_included(self):
-        """show_full_details=False is not included."""
-        params = {"show_full_details": False}
-        result = build_query_string(params, 1)
-        assert "show_full_details" not in result
-
     def test_with_calendar_view(self):
         """Include view parameter for calendar."""
         params = {"view": "calendar"}
@@ -99,7 +87,6 @@ class TestBuildQueryString:
             "date_before": "2026-06-01",
             "category_ids": [2],
             "center_ids": [11],
-            "show_full_details": True,
             "view": "calendar",
         }
         result = build_query_string(params, 5)
@@ -108,7 +95,6 @@ class TestBuildQueryString:
         assert "date_before=2026-06-01" in result
         assert "category_ids=2" in result
         assert "center_ids=11" in result
-        assert "show_full_details=true" in result
         assert "view=calendar" in result
         assert "page=5" in result
 

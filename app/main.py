@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import logging
 import pathlib
 
@@ -37,6 +38,20 @@ def _sanitize_html(value: str) -> str:
     return nh3.clean(value)
 
 
+def _activity_code_color(value: str) -> str:
+    """Hash an activity code (e.g. "1201.101") to a stable HSL color.
+
+    Activities sharing the same prefix (the part before the dot) get the same
+    color, so visually grouping related sessions in the listing.
+    """
+    if not value:
+        return "hsl(195, 12%, 47%)"
+    prefix = value.split(".", 1)[0] or value
+    digest = hashlib.md5(prefix.encode("utf-8")).hexdigest()
+    hue = int(digest[:8], 16) % 360
+    return f"hsl({hue}, 55%, 42%)"
+
+
 def create_app() -> fastapi.FastAPI:
     app = fastapi.FastAPI(title="Santa Monica Activities")
 
@@ -50,6 +65,7 @@ def create_app() -> fastapi.FastAPI:
     # Custom filters
     templates.env.filters["format_date"] = _format_date
     templates.env.filters["sanitize_html"] = _sanitize_html
+    templates.env.filters["activity_code_color"] = _activity_code_color
 
     # Template globals
     templates.env.globals["original_site_link"] = config.settings.original_site_link

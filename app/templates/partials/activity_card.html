@@ -1,91 +1,110 @@
-<article class="activity-card">
-    <div class="cv-name-row">
-        <h3 class="activity-name">
+{% set code_color = activity.number|activity_code_color %}
+{% set capacity = activity.total_open %}
+{% set enrolled = activity.already_enrolled %}
+{% set has_spots = capacity is not none and enrolled is not none and capacity > 0 %}
+{% if has_spots %}
+    {% set remaining = capacity - enrolled %}
+    {% set fill_pct = (enrolled / capacity * 100) if capacity > 0 else 0 %}
+    {% if remaining <= 0 %}
+        {% set avail_state = "full" %}
+    {% elif remaining / capacity <= 0.25 %}
+        {% set avail_state = "low" %}
+    {% else %}
+        {% set avail_state = "ok" %}
+    {% endif %}
+{% endif %}
+<article class="act-card" style="--code-color: {{ code_color }};">
+    <div class="act-card-stripe"></div>
+    <button class="act-card-heart wishlist-btn wishlist-btn--icon{% if activity.wish_list_id %} wishlisted{% endif %}"
+            data-activity-id="{{ activity.id }}"
+            data-wish-list-id="{{ activity.wish_list_id }}"
+            {% if not api_client.is_authenticated %}disabled title="Log in to save to wishlist"{% endif %}
+            title="{% if activity.wish_list_id %}Saved to wishlist{% else %}Save to wishlist{% endif %}">
+        {% if activity.wish_list_id %}&#9829;{% else %}&#9825;{% endif %}
+    </button>
+    <div class="act-card-body">
+        {% if activity.number %}
+        <span class="act-card-code">● #{{ activity.number }}</span>
+        {% endif %}
+        <h3 class="act-card-title">
             <a href="/activity/{{ activity.id }}">{{ activity.name }}</a>
         </h3>
-        {% if activity.number %}
-        <span class="cv-num">#{{ activity.number }}</span>
-        {% endif %}
-    </div>
 
-    <div class="cv-ages-spots-row">
         {% if activity.ages %}
-        <span class="cv-ages">Ages {{ activity.ages }}</span>
+        <div class="act-card-meta">
+            <span class="act-card-pill">Ages {{ activity.ages }}</span>
+        </div>
         {% endif %}
-        {% if activity.total_open is not none and activity.already_enrolled is not none %}
-        <span class="cv-spots-group">
-            <span class="cv-spots-num">{{ activity.total_open - activity.already_enrolled }}</span>
-            <span class="cv-spots-of">/ {{ activity.total_open }}</span>
-            <span class="cv-spots-label">spots open</span>
-        </span>
-        {% endif %}
-    </div>
 
-    <div class="cv-boxes">
-        <div class="cv-box">
-            <div class="cv-box-label">Schedule</div>
-            {% if meeting_dates.get(activity.id) %}
-                {% for pattern in meeting_dates[activity.id].activity_patterns %}
-                    {% for pd in pattern.pattern_dates %}
-                    <div class="cv-box-primary">{{ pd.weekdays }} &middot; {{ pd.starting_time[:5] }} &ndash; {{ pd.ending_time[:5] }}</div>
-                    {% endfor %}
-                {% endfor %}
-            {% endif %}
-            {% if activity.date_range_start and activity.date_range_end %}
-            <div class="cv-box-secondary">{{ activity.date_range_start|format_date }} &ndash; {{ activity.date_range_end|format_date }}</div>
-            {% elif activity.date_range_start %}
-            <div class="cv-box-secondary">{{ activity.date_range_start|format_date }}</div>
-            {% endif %}
-        </div>
-        <div class="cv-box">
-            <div class="cv-box-label">Location</div>
-            {% if activity.location and activity.location.label %}
-            <div class="cv-box-primary">{{ activity.location.label }}</div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="cv-cost">
-        {% if prices and prices.get(activity.id) %}
-        {% set activity_price = prices[activity.id] %}
-        {% if activity_price.free %}
-        <div class="cv-price-pair">
-            <span class="cv-price-big">Free</span>
-        </div>
-        {% else %}
-        <div class="cv-price-pair">
-            {% set ns = namespace(first=true) %}
-            {% for price_group in activity_price.prices %}
-                {% for p in price_group.details %}
-                <div class="cv-price-item">
-                    {% if ns.first %}
-                    <span class="cv-price-big">{{ p.price }}</span>
-                    <span class="cv-price-label">{{ p.description or "resident" }}</span>
-                    {% set ns.first = false %}
-                    {% else %}
-                    <span class="cv-price-secondary">{{ p.price }}</span>
-                    <span class="cv-price-secondary-label">{{ p.description or "non-res" }}</span>
-                    {% endif %}
-                </div>
+        {% if meeting_dates.get(activity.id) %}
+        <div class="act-card-when">
+            {% for pattern in meeting_dates[activity.id].activity_patterns %}
+                {% for pd in pattern.pattern_dates %}
+                <div class="act-card-when-time">{{ pd.weekdays }} &middot; {{ pd.starting_time[:5] }} &ndash; {{ pd.ending_time[:5] }}</div>
                 {% endfor %}
             {% endfor %}
+            {% if activity.date_range_start and activity.date_range_end %}
+            <div class="act-card-when-range">{{ activity.date_range_start|format_date }} &ndash; {{ activity.date_range_end|format_date }}</div>
+            {% elif activity.date_range_start %}
+            <div class="act-card-when-range">{{ activity.date_range_start|format_date }}</div>
+            {% endif %}
+        </div>
+        {% elif activity.date_range_start %}
+        <div class="act-card-when">
+            <div class="act-card-when-range">
+                {{ activity.date_range_start|format_date }}{% if activity.date_range_end %} &ndash; {{ activity.date_range_end|format_date }}{% endif %}
+            </div>
         </div>
         {% endif %}
+
+        {% if activity.location and activity.location.label %}
+        <div class="act-card-where">{{ activity.location.label }}</div>
+        {% endif %}
+
+        {% if has_spots %}
+        <div class="act-card-avail">
+            <div class="act-card-avail-bar" data-state="{{ avail_state }}">
+                <div class="act-card-avail-fill" style="width: {{ fill_pct }}%"></div>
+            </div>
+            <div class="act-card-avail-text">
+                {% if remaining <= 0 %}
+                <strong>Waitlist only</strong>
+                {% else %}
+                <strong>{{ remaining }}</strong> of {{ capacity }} spots left{% if avail_state == "low" %} · filling up{% endif %}
+                {% endif %}
+            </div>
+        </div>
         {% endif %}
     </div>
-
-    <div class="activity-actions">
-        <button class="btn wishlist-btn{% if activity.wish_list_id %} wishlisted{% endif %}"
-                data-activity-id="{{ activity.id }}"
-                data-wish-list-id="{{ activity.wish_list_id }}"
-                {% if not api_client.is_authenticated %}disabled title="Log in to save to wishlist"{% endif %}>
-            {% if activity.wish_list_id %}&#9829; Wishlisted{% else %}&#9825; Wishlist{% endif %}
-        </button>
+    <div class="act-card-foot">
+        <div class="act-card-price">
+            {% if prices and prices.get(activity.id) %}
+                {% set activity_price = prices[activity.id] %}
+                {% if activity_price.free %}
+                <span class="act-card-price-big">Free</span>
+                {% else %}
+                    {% set price_details = [] %}
+                    {% for price_group in activity_price.prices %}
+                        {% for p in price_group.details %}
+                            {% set _ = price_details.append(p) %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% if price_details %}
+                    <span class="act-card-price-big">{{ price_details[0].price }}</span>
+                    <span class="act-card-price-sub">{{ price_details[0].description or "resident" }}{% if price_details|length > 1 %} · {{ price_details[1].price }} {{ price_details[1].description or "non-res" }}{% endif %}</span>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
         {% set btn_status = button_statuses.get(activity.id) if button_statuses else None %}
         {% if btn_status and btn_status.action_link and btn_status.action_link.href %}
-        <a href="{{ btn_status.action_link.href }}" class="btn {% if btn_status.action_link.type == 3 %}btn-enroll{% else %}btn-waitlist{% endif %}" target="_blank">
-            {{ btn_status.action_link.label or "Enroll Now" }}
+        <a href="{{ btn_status.action_link.href }}"
+           class="btn {% if btn_status.action_link.type == 3 %}btn-enroll{% else %}btn-waitlist{% endif %}"
+           target="_blank">
+            {{ btn_status.action_link.label or "Enroll" }} →
         </a>
+        {% elif btn_status and btn_status.notification %}
+        <span class="act-card-closed" title="{{ btn_status.notification }}">{{ btn_status.notification }}</span>
         {% endif %}
     </div>
 </article>

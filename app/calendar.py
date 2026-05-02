@@ -225,6 +225,7 @@ def build_calendar_data(
             color=color,
             starting_time=starting_time,
             ending_time=ending_time,
+            notification=btn.notification if btn else "",
         )
 
         all_dates = activity_meeting_dates(activity, meeting_info)
@@ -317,8 +318,6 @@ def build_query_string(params: dict, page: int) -> str:
         query_params.append(("category_ids", str(cat_id)))
     for center_id in params.get("center_ids", []):
         query_params.append(("center_ids", str(center_id)))
-    if params.get("show_full_details"):
-        query_params.append(("show_full_details", "true"))
     if params.get("wishlist_only"):
         query_params.append(("wishlist_only", "true"))
     if params.get("view") and params["view"] != "card":

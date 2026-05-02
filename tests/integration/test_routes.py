@@ -153,7 +153,7 @@ class TestBrowseActivitiesRoute:
         assert "No activities found" in response.text
 
     @respx.mock
-    def test_homepage_with_show_full_details(
+    def test_homepage_fetches_full_details(
         self,
         client,
         mock_api_filters_response,
@@ -161,7 +161,7 @@ class TestBrowseActivitiesRoute:
         mock_api_meeting_dates_response,
         mock_api_price_response,
     ):
-        """Homepage fetches extra details when show_full_details=true."""
+        """Homepage always fetches meeting dates and prices for the card view."""
         respx.get(f"{settings.base_url}/activities/filters").mock(
             return_value=Response(200, json=mock_api_filters_response)
         )
@@ -175,11 +175,9 @@ class TestBrowseActivitiesRoute:
             return_value=Response(200, json=mock_api_price_response)
         )
 
-        response = client.get("/?show_full_details=true")
+        response = client.get("/")
 
         assert response.status_code == 200
-        # Price info should be visible when show_full_details is on
-        # The exact content depends on template rendering
 
 
 class TestActivityDetailRoute:
@@ -602,7 +600,7 @@ class TestWishlistTemplateRendering:
         response = client.get("/")
 
         assert response.status_code == 200
-        assert "View wishlist only" in response.text
+        assert "Wishlist only" in response.text
         assert "Log in to use wishlist" in response.text
 
     @respx.mock
@@ -682,7 +680,7 @@ class TestWishlistTemplateRendering:
         response = authenticated_client.get("/")
 
         assert response.status_code == 200
-        assert "View wishlist only" in response.text
+        assert "Wishlist only" in response.text
 
     @respx.mock
     def test_wishlisted_card_has_filled_heart(self, authenticated_client):

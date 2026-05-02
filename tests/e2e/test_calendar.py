@@ -218,7 +218,7 @@ class TestActivityDetailPage:
         page.goto(server_url)
 
         # Click first activity link
-        page.locator(".activity-name a").first.click()
+        page.locator(".act-card-title a").first.click()
 
         # Should be on detail page
         expect(page).to_have_url(re.compile(r"/activity/12345"))

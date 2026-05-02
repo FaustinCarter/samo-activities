@@ -16,14 +16,14 @@ class TestHomepage:
         expect(page).to_have_title("Santa Monica Activities")
 
         # Should show activity cards
-        expect(page.locator(".activity-card")).to_have_count(3)
+        expect(page.locator(".act-card")).to_have_count(3)
 
     def test_activities_display_name(self, page: Page, server_url: str):
         """Activity cards show activity names."""
         page.goto(server_url)
 
         # Check first activity name is visible
-        expect(page.locator(".activity-name").first).to_contain_text(
+        expect(page.locator(".act-card-title").first).to_contain_text(
             "Youth Swim Lessons"
         )
 
@@ -31,7 +31,7 @@ class TestHomepage:
         """Activity cards show location."""
         page.goto(server_url)
 
-        expect(page.locator(".activity-location").first).to_contain_text(
+        expect(page.locator(".act-card-where").first).to_contain_text(
             "Memorial Park Pool"
         )
 
@@ -39,15 +39,13 @@ class TestHomepage:
         """Activity cards show age range."""
         page.goto(server_url)
 
-        expect(page.locator(".activity-age").first).to_contain_text("5 - 8 years")
+        expect(page.locator(".act-card-pill").first).to_contain_text("5 - 8 years")
 
     def test_activities_display_spots(self, page: Page, server_url: str):
-        """Activity cards show available spots."""
+        """Activity cards show an availability indicator."""
         page.goto(server_url)
 
-        expect(page.locator(".activity-spots").first).to_contain_text(
-            "5 of 10 spots open"
-        )
+        expect(page.locator(".act-card-avail-text").first).to_be_visible()
 
     def test_results_count_shown(self, page: Page, server_url: str):
         """Results count is displayed."""
@@ -76,23 +74,29 @@ class TestSearchFilter:
         expect(search_input).to_have_value("swim")
 
     def test_date_filters_exist(self, page: Page, server_url: str):
-        """Date filter inputs are present."""
+        """Date filter inputs are present (inside the Dates popover)."""
         page.goto(server_url)
 
-        expect(page.locator('input[name="date_after"]')).to_be_visible()
-        expect(page.locator('input[name="date_before"]')).to_be_visible()
+        expect(page.locator('input[name="date_after"]')).to_be_attached()
+        expect(page.locator('input[name="date_before"]')).to_be_attached()
 
-    def test_category_select_exists(self, page: Page, server_url: str):
-        """Category filter dropdown is present."""
+    def test_category_filter_exists(self, page: Page, server_url: str):
+        """Category filter chip is present."""
         page.goto(server_url)
 
-        expect(page.locator('select[name="category_ids"]')).to_be_visible()
+        expect(
+            page.locator(".filterbar-chip", has_text="Category")
+        ).to_be_visible()
+        expect(page.locator('input[name="category_ids"]').first).to_be_attached()
 
-    def test_location_select_exists(self, page: Page, server_url: str):
-        """Location filter dropdown is present."""
+    def test_location_filter_exists(self, page: Page, server_url: str):
+        """Location filter chip is present."""
         page.goto(server_url)
 
-        expect(page.locator('select[name="center_ids"]')).to_be_visible()
+        expect(
+            page.locator(".filterbar-chip", has_text="Location")
+        ).to_be_visible()
+        expect(page.locator('input[name="center_ids"]').first).to_be_attached()
 
     def test_search_button_exists(self, page: Page, server_url: str):
         """Search button is present."""
@@ -155,7 +159,7 @@ class TestActivityLinks:
         page.goto(server_url)
 
         # First activity link
-        link = page.locator(".activity-name a").first
+        link = page.locator(".act-card-title a").first
         expect(link).to_have_attribute("href", "/activity/12345")
 
     def test_enroll_button_links_externally(self, page: Page, server_url: str):

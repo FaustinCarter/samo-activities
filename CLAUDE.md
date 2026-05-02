@@ -12,22 +12,33 @@ A FastAPI web app that replaces the clunky ActiveNet website for browsing Santa 
 ## Project Layout
 ```
 app/
-├── main.py              # FastAPI app init, middleware, template filters
+├── main.py              # FastAPI app init, middleware, template filters (incl. activity_code_color)
 ├── config.py            # Pydantic Settings (BASE_URL, port, locale, page_size)
 ├── client.py            # ActiveNetClient: HTTP wrapper, bootstrap, login, API calls
 ├── sessions.py          # In-memory per-user session store (keyed by cookie)
 ├── deps.py              # Session middleware + FastAPI dependency injection
 ├── calendar.py          # Calendar building, pattern expansion, date math
 ├── models/
-│   ├── activity.py      # ActivityItem, ActivityDetail, filters, pricing, etc.
+│   ├── activity.py      # ActivityItem, ActivityDetail, ButtonStatus, filters, pricing
+│   ├── calendar.py      # CalendarEvent, CalendarDay, CalendarMonth (popup_dict shape)
 │   └── common.py        # PageInfo, response envelope
 ├── routes/
-│   ├── activities.py    # GET / (browse), GET /activity/{id} (detail)
+│   ├── activities.py    # GET / (browse), GET /activity/{id} (detail), wishlist API
 │   └── auth.py          # GET/POST /login, GET /logout
 ├── services/
-│   └── activities.py    # Business logic: search, filters, details, meeting dates
-├── templates/           # Jinja2 HTML templates
-└── static/              # style.css, calendar.js
+│   └── activities.py    # Business logic: search, filters, details, meeting dates, wishlist
+├── templates/
+│   ├── base.html
+│   ├── index.html              # Sticky chip filter bar + card/calendar results
+│   ├── activity_detail.html
+│   ├── login.html
+│   └── partials/
+│       ├── activity_card.html  # Card with code-colored stripe, availability bar
+│       └── calendar.html       # Calendar grid + popup template
+└── static/
+    ├── style.css
+    ├── calendar.js      # Calendar popup rendering and interactions
+    └── wishlist.js      # Shared wishlist toggle (icon + text variants)
 tests/
 ├── unit/                # Calendar logic, model validation
 ├── integration/         # Route + service tests with mocked HTTP (respx)
