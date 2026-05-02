@@ -13,7 +13,7 @@ class TestHomepage:
         page.goto(server_url)
 
         # Page should have loaded
-        expect(page).to_have_title("Santa Monica Activities")
+        expect(page).to_have_title("SaMo Rec: Activity Browser")
 
         # Should show activity cards
         expect(page.locator(".act-card")).to_have_count(3)

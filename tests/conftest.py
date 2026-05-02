@@ -1,4 +1,4 @@
-"""Shared test fixtures for the Santa Monica Activities app."""
+"""Shared test fixtures for the SaMo Rec: Activity Browser app."""
 
 from unittest.mock import AsyncMock, patch
 

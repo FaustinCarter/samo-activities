@@ -1,4 +1,4 @@
-# CLAUDE.md — Santa Monica Activities Browser
+# CLAUDE.md — SaMo Rec: Activity Browser Browser
 
 ## What This Is
 A FastAPI web app that replaces the clunky ActiveNet website for browsing Santa Monica recreation activities. Shows activity metadata (days, times, location, availability) upfront in card and calendar views, eliminating the need to click into each activity's detail page.

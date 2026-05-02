@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Santa Monica Activities{% endblock %}</title>
+    <title>{% block title %}SaMo Rec: Activity Browser{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <header class="site-header">
         <div class="container header-row">
-            <h1><a href="/">Santa Monica Activities</a></h1>
+            <h1><a href="/">SaMo Rec:</a> Alternate frontend for Santa Monica's ActiveNet site</h1>
             <nav class="header-auth">
                 {% if api_client is defined and api_client.is_authenticated %}
                 <span class="header-user">{{ api_client.user_info.first_name }}</span>

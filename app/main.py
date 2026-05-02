@@ -53,7 +53,7 @@ def _activity_code_color(value: str) -> str:
 
 
 def create_app() -> fastapi.FastAPI:
-    app = fastapi.FastAPI(title="Santa Monica Activities")
+    app = fastapi.FastAPI(title="SaMo Rec: Activity Browser")
 
     # Session manager — in-memory store of per-user ActiveNetClient instances
     app.state.session_manager = SessionManager()

@@ -4,11 +4,17 @@ The primary reason for building this site is that one must click into an activit
 This is especially annoying when trying to sign up for a child's swim lessons because there will be 10-12 instances of the same lesson on different days and times and each one must individually be clicked into to see when it is!
 So this app provides a card browser that contains that information up front and also a calendar view.
 
+If you have suggestions or feature requests, open an issue here in this repository and I'll try to make it happen!
+
+## AI Usage
 This project is also my first time using an AI for anything. I built this with the opencode terminal and Claude Opus 4.5. So far I'm super impressed with the capability of the AI, but the code (although functional) is still quite a bit of a mess. Functionality isn't cleanly separated between modules, URL's and other settings-type stuff is hardcoded everywhere despite the existince of a settings.py file, and Claude seems to treat Python's typing system like a suggestion rather than a requirement (but hey, maybe that's the Pythonic thing to do with type hints anyhow...).
 
 Another observation while working this small project is that Claude always jumps straight to a solution that is code based, even if the right thing to do is ask the user to run some tests first. Once I realized this and started asking things like "what test can I do to inform the next steps" the development process suddenly started going a lot faster.
 
 Overall I got to a working MVP of the activity browser in about 4-5 20 minute sessions with Claude (using Opus 4.5 burns through my 5 hour quota pretty darn fast!).
+
+### Update: May 2026
+Claude Opus 4.6 and now 4.7 are much _much_ better at writing code. The are both also especially good at rendering screenshots of the front-end and helping with design elements. The code is now a lot "cleaner" (from my perspective) although there is still a lot of low hanging fruit.
 
 ## Login Flow
 
