@@ -103,13 +103,14 @@ class TestCalendarPopup:
         expect(popup_content).to_contain_text("09:00")
 
     def test_popup_has_view_details_link(self, page: Page, server_url: str):
-        """Popup has a link to view activity details."""
+        """Popup title links to the activity detail page."""
         page.goto(f"{server_url}/?view=calendar")
 
         page.locator(".cal-event-pill").first.click()
 
-        detail_link = page.locator('#cal-popup-content a:has-text("View details")')
+        detail_link = page.locator('#cal-popup-content .act-card-title a').first
         expect(detail_link).to_be_visible()
+        expect(detail_link).to_have_attribute("href", re.compile(r"/activity/"))
 
     def test_popup_closes_on_close_button(self, page: Page, server_url: str):
         """Popup closes when clicking close button."""
@@ -225,14 +226,14 @@ class TestActivityDetailPage:
         expect(page.locator(".detail-page")).to_be_visible()
 
     def test_navigate_from_calendar_popup_to_detail(self, page: Page, server_url: str):
-        """Clicking 'View details' in popup navigates to detail page."""
+        """Clicking the popup card title navigates to the detail page."""
         page.goto(f"{server_url}/?view=calendar")
 
         # Open popup
         page.locator(".cal-event-pill").first.click()
 
-        # Click view details link
-        page.locator('#cal-popup-content a:has-text("View details")').click()
+        # Click the title link inside the popup
+        page.locator('#cal-popup-content .act-card-title a').first.click()
 
         # Should be on detail page
         expect(page).to_have_url(re.compile(r"/activity/"))

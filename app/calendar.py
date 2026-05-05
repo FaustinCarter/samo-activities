@@ -225,7 +225,6 @@ def build_calendar_data(
             color=color,
             starting_time=starting_time,
             ending_time=ending_time,
-            notification=btn.notification if btn else "",
         )
 
         all_dates = activity_meeting_dates(activity, meeting_info)

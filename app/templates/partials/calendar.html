@@ -36,7 +36,7 @@
                     <li>
                         <button class="cal-event-pill"
                                 style="background-color: {{ event.color }};"
-                                data-event="{{ event.popup_dict(api_client.is_authenticated) | tojson | forceescape }}"
+                                data-activity-id="{{ event.id }}"
                                 aria-label="{{ event.name }}{% if event.starting_time %}, {{ event.starting_time }}{% if event.ending_time %} – {{ event.ending_time }}{% endif %}{% endif %}">
                             <span class="cal-event-name">{% if api_client.is_authenticated and event.wish_list_id %}&hearts; {% endif %}{{ event.name }}</span>
                             {% if event.starting_time %}
@@ -72,6 +72,15 @@
 {% endif %}{# /if calendar_months #}
 
 </div>{# /#cal-root #}
+
+<!-- Hidden source cards: cloned into the popup on pill click. -->
+<div id="cal-popup-sources" hidden>
+    {% for activity in activities %}
+    <div class="cal-popup-card-source" data-activity-id="{{ activity.id }}">
+        {% include "partials/activity_card.html" %}
+    </div>
+    {% endfor %}
+</div>
 
 <!-- Event popup — defined here alongside the rest of the calendar markup -->
 <div id="cal-popup" class="cal-popup" hidden aria-modal="true" role="dialog" aria-label="Activity details">
