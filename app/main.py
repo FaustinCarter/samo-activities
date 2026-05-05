@@ -78,6 +78,18 @@ def create_app() -> fastapi.FastAPI:
         "/static", staticfiles.StaticFiles(directory=str(static_dir)), name="static"
     )
 
+    # Content-hash cache busting for static assets
+    static_hashes: dict[str, str] = {}
+
+    def static_url(path: str) -> str:
+        if path not in static_hashes:
+            full = static_dir / path
+            digest = hashlib.sha256(full.read_bytes()).hexdigest()[:10]
+            static_hashes[path] = digest
+        return f"/static/{path}?v={static_hashes[path]}"
+
+    templates.env.globals["static_url"] = static_url
+
     # Session middleware — resolves/creates sessions and sets the cookie
     app.add_middleware(BaseHTTPMiddleware, dispatch=session_middleware)
 

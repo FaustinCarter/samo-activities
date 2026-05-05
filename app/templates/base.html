@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SaMo Rec: Activity Browser{% endblock %}</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ static_url('style.css') }}">
 </head>
 <body>
     <header class="site-header">
@@ -30,7 +30,7 @@
             <p>Data from Santa Monica Recreation: <a href="{{ original_site_link }}">{{ original_site_link }}</a></p>
         </div>
     </footer>
-    <script src="/static/wishlist.js"></script>
-    <script src="/static/calendar.js"></script>
+    <script src="{{ static_url('wishlist.js') }}"></script>
+    <script src="{{ static_url('calendar.js') }}"></script>
 </body>
 </html>
