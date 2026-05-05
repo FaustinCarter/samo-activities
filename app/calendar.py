@@ -313,6 +313,16 @@ def build_query_string(params: dict, page: int) -> str:
         query_params.append(("date_after", params["date_after"]))
     if params.get("date_before"):
         query_params.append(("date_before", params["date_before"]))
+    if params.get("time_after"):
+        query_params.append(("time_after", params["time_after"]))
+    if params.get("time_before"):
+        query_params.append(("time_before", params["time_before"]))
+    for dow in params.get("days_of_week", []):
+        query_params.append(("days_of_week", str(dow)))
+    if params.get("min_age") is not None:
+        query_params.append(("min_age", str(params["min_age"])))
+    if params.get("max_age") is not None:
+        query_params.append(("max_age", str(params["max_age"])))
     for cat_id in params.get("category_ids", []):
         query_params.append(("category_ids", str(cat_id)))
     for center_id in params.get("center_ids", []):

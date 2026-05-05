@@ -1,7 +1,16 @@
 {% extends "base.html" %}
 
 {% set has_active_filters = params.q or params.date_after or params.date_before
+    or params.time_after or params.time_before or params.days_of_week
+    or params.min_age is not none or params.max_age is not none
     or params.category_ids or params.center_ids or params.wishlist_only %}
+{% set when_active = params.date_after or params.date_before
+    or params.time_after or params.time_before or params.days_of_week %}
+{% set when_active_count = (1 if (params.date_after or params.date_before) else 0)
+    + (1 if (params.time_after or params.time_before) else 0)
+    + (params.days_of_week|length if params.days_of_week else 0) %}
+{% set age_active = params.min_age is not none or params.max_age is not none %}
+{% set day_labels = [(0, 'Sun'), (1, 'Mon'), (2, 'Tue'), (3, 'Wed'), (4, 'Thu'), (5, 'Fri'), (6, 'Sat')] %}
 
 {% block content %}
 <form method="get" action="/" class="filterbar" id="filter-form">
@@ -14,20 +23,63 @@
         </div>
 
         <details class="filterbar-pop">
-            <summary class="filterbar-chip {% if params.date_after or params.date_before %}filterbar-chip--active{% endif %}">
-                Dates
-                {% if params.date_after or params.date_before %}
+            <summary class="filterbar-chip {% if when_active %}filterbar-chip--active{% endif %}">
+                When
+                {% if when_active_count %}
+                <span class="filterbar-chip-count">{{ when_active_count }}</span>
+                {% endif %}
+            </summary>
+            <div class="filterbar-popover filterbar-popover--when">
+                <div class="filterbar-popover-section">
+                    <div class="filterbar-popover-label">Date range</div>
+                    <div class="filterbar-popover-pair">
+                        <input type="date" name="date_after" value="{{ params.date_after }}" aria-label="From date">
+                        <span class="filterbar-popover-sep">to</span>
+                        <input type="date" name="date_before" value="{{ params.date_before }}" aria-label="To date">
+                    </div>
+                </div>
+                <div class="filterbar-popover-section">
+                    <div class="filterbar-popover-label">Time range</div>
+                    <div class="filterbar-popover-pair">
+                        <input type="time" name="time_after" value="{{ params.time_after }}" aria-label="From time">
+                        <span class="filterbar-popover-sep">to</span>
+                        <input type="time" name="time_before" value="{{ params.time_before }}" aria-label="To time">
+                    </div>
+                </div>
+                <div class="filterbar-popover-section">
+                    <div class="filterbar-popover-label">Days of the Week</div>
+                    <div class="filterbar-day-grid">
+                        {% for value, label in day_labels %}
+                        <label class="filterbar-day">
+                            <input type="checkbox" name="days_of_week" value="{{ value }}"
+                                   {% if value in params.days_of_week %}checked{% endif %}>
+                            <span>{{ label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="filterbar-pop">
+            <summary class="filterbar-chip {% if age_active %}filterbar-chip--active{% endif %}">
+                Age
+                {% if age_active %}
                 <span class="filterbar-chip-count">●</span>
                 {% endif %}
             </summary>
             <div class="filterbar-popover">
                 <label class="filterbar-popover-row">
                     <span>From</span>
-                    <input type="date" name="date_after" value="{{ params.date_after }}">
+                    <input type="number" name="min_age" min="0" max="120" inputmode="numeric"
+                           placeholder="e.g. 5"
+                           value="{{ params.min_age if params.min_age is not none else '' }}">
                 </label>
                 <label class="filterbar-popover-row">
                     <span>To</span>
-                    <input type="date" name="date_before" value="{{ params.date_before }}">
+                    <input type="number" name="max_age" min="0" max="120" inputmode="numeric"
+                           placeholder="e.g. 12"
+                           value="{{ params.max_age if params.max_age is not none else '' }}">
                 </label>
             </div>
         </details>
@@ -90,6 +142,27 @@
         {% endif %}
         {% if params.date_before %}
         <span class="filterbar-tag">Before {{ params.date_before|format_date }}</span>
+        {% endif %}
+        {% if params.time_after %}
+        <span class="filterbar-tag">After {{ params.time_after }}</span>
+        {% endif %}
+        {% if params.time_before %}
+        <span class="filterbar-tag">Before {{ params.time_before }}</span>
+        {% endif %}
+        {% if params.days_of_week %}
+        <span class="filterbar-tag">
+            {%- for value, label in day_labels if value in params.days_of_week -%}
+            {{ label }}{{ ", " if not loop.last }}
+            {%- endfor -%}
+        </span>
+        {% endif %}
+        {% if params.min_age is not none or params.max_age is not none %}
+        <span class="filterbar-tag">
+            Age
+            {%- if params.min_age is not none %} {{ params.min_age }}{% endif -%}
+            {%- if params.min_age is not none and params.max_age is not none %}–{% elif params.max_age is not none %} ≤{% endif -%}
+            {%- if params.max_age is not none %}{{ params.max_age }}{% endif -%}
+        </span>
         {% endif %}
         {% for cat in filters.categories if cat.id|int in params.category_ids %}
         <span class="filterbar-tag">{{ cat.display_name }}</span>

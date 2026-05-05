@@ -257,12 +257,101 @@ a:hover {
     min-width: 3rem;
 }
 
-.filterbar-popover-row input[type="date"] {
+.filterbar-popover-row input[type="date"],
+.filterbar-popover-row input[type="number"] {
     flex: 1;
     padding: 0.35rem 0.5rem;
     border: 1px solid #b8c2c5;
     border-radius: 6px;
     font-size: 0.85rem;
+}
+
+.filterbar-popover-row input[type="number"] {
+    width: 6rem;
+}
+
+/* "When" chip popover: stacked sections with paired inputs */
+.filterbar-popover--when {
+    min-width: 280px;
+    gap: 0.75rem;
+}
+
+.filterbar-popover-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.filterbar-popover-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4d5a5e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filterbar-popover-pair {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.filterbar-popover-pair input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #b8c2c5;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.filterbar-popover-sep {
+    font-size: 0.78rem;
+    color: #7a878a;
+}
+
+.filterbar-day-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.25rem;
+}
+
+.filterbar-day {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+.filterbar-day input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.filterbar-day span {
+    display: block;
+    text-align: center;
+    padding: 0.3rem 0;
+    border: 1px solid #b8c2c5;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #4d5a5e;
+    background: #fff;
+}
+
+.filterbar-day:hover span {
+    background: #eef3f4;
+}
+
+.filterbar-day input:checked + span {
+    background: #5a7d8a;
+    border-color: #5a7d8a;
+    color: #fff;
+}
+
+.filterbar-day input:focus-visible + span {
+    outline: 2px solid #5a7d8a;
+    outline-offset: 1px;
 }
 
 .filterbar-check {

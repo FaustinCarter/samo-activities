@@ -20,6 +20,11 @@ async def browse_activities(
     q: str = "",
     date_after: str = "",
     date_before: str = "",
+    time_after: str = "",
+    time_before: str = "",
+    days_of_week: typing.Annotated[list[int] | None, fastapi.Query()] = None,
+    min_age: int | None = None,
+    max_age: int | None = None,
     category_ids: typing.Annotated[list[int] | None, fastapi.Query()] = None,
     center_ids: typing.Annotated[list[int] | None, fastapi.Query()] = None,
     wishlist_only: bool = False,
@@ -39,10 +44,20 @@ async def browse_activities(
         )
     else:
         wishlist_only = False
+        # ActiveNet expects a 7-char bitmask, position 0=Sun .. 6=Sat.
+        days_bitmask = ""
+        if days_of_week:
+            days_set = set(days_of_week)
+            days_bitmask = "".join("1" if i in days_set else "0" for i in range(7))
         pattern = activity_models.ActivitySearchPattern(
             activity_keyword=q,
             date_after=date_after,
             date_before=date_before,
+            time_after_str=time_after,
+            time_before_str=time_before,
+            days_of_week=days_bitmask,
+            min_age=min_age,
+            max_age=max_age,
             activity_category_ids=category_ids or [],
             center_ids=center_ids or [],
         )
@@ -71,6 +86,11 @@ async def browse_activities(
         "q": q,
         "date_after": date_after,
         "date_before": date_before,
+        "time_after": time_after,
+        "time_before": time_before,
+        "days_of_week": days_of_week or [],
+        "min_age": min_age,
+        "max_age": max_age,
         "category_ids": category_ids or [],
         "center_ids": center_ids or [],
         "wishlist_only": wishlist_only,

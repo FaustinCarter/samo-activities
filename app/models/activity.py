@@ -46,7 +46,8 @@ class ActivitySearchPattern(pydantic.BaseModel):
     activity_other_category_ids: list[int] = pydantic.Field(default_factory=list)
     child_season_ids: list[int] = pydantic.Field(default_factory=list)
     skills: list = pydantic.Field(default_factory=list)
-    days_of_week: list[int] | None = None
+    # 7-char bitmask, position 0=Sun .. 6=Sat. Empty string = no filter.
+    days_of_week: str = ""
     time_after_str: str = ""
     time_before_str: str = ""
     date_after: str = ""
