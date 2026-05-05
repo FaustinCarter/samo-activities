@@ -132,28 +132,35 @@
     </div>
 
     {% if has_active_filters %}
+    {% macro tag_x(clear, value=None, label="filter") -%}
+        <button type="button" class="filterbar-tag-x"
+                data-clear="{{ clear }}"
+                {% if value is not none %}data-value="{{ value }}"{% endif %}
+                aria-label="Remove {{ label }} filter">×</button>
+    {%- endmacro %}
     <div class="filterbar-active">
         <span class="filterbar-active-label">Active:</span>
         {% if params.q %}
-        <span class="filterbar-tag">"{{ params.q }}"</span>
+        <span class="filterbar-tag">"{{ params.q }}"{{ tag_x("q", label="search") }}</span>
         {% endif %}
         {% if params.date_after %}
-        <span class="filterbar-tag">After {{ params.date_after|format_date }}</span>
+        <span class="filterbar-tag">After {{ params.date_after|format_date }}{{ tag_x("date_after", label="start date") }}</span>
         {% endif %}
         {% if params.date_before %}
-        <span class="filterbar-tag">Before {{ params.date_before|format_date }}</span>
+        <span class="filterbar-tag">Before {{ params.date_before|format_date }}{{ tag_x("date_before", label="end date") }}</span>
         {% endif %}
         {% if params.time_after %}
-        <span class="filterbar-tag">After {{ params.time_after }}</span>
+        <span class="filterbar-tag">After {{ params.time_after }}{{ tag_x("time_after", label="start time") }}</span>
         {% endif %}
         {% if params.time_before %}
-        <span class="filterbar-tag">Before {{ params.time_before }}</span>
+        <span class="filterbar-tag">Before {{ params.time_before }}{{ tag_x("time_before", label="end time") }}</span>
         {% endif %}
         {% if params.days_of_week %}
         <span class="filterbar-tag">
             {%- for value, label in day_labels if value in params.days_of_week -%}
             {{ label }}{{ ", " if not loop.last }}
             {%- endfor -%}
+            {{ tag_x("days_of_week", label="days of week") }}
         </span>
         {% endif %}
         {% if params.min_age is not none or params.max_age is not none %}
@@ -162,16 +169,17 @@
             {%- if params.min_age is not none %} {{ params.min_age }}{% endif -%}
             {%- if params.min_age is not none and params.max_age is not none %}–{% elif params.max_age is not none %} ≤{% endif -%}
             {%- if params.max_age is not none %}{{ params.max_age }}{% endif -%}
+            {{ tag_x("min_age max_age", label="age") }}
         </span>
         {% endif %}
         {% for cat in filters.categories if cat.id|int in params.category_ids %}
-        <span class="filterbar-tag">{{ cat.display_name }}</span>
+        <span class="filterbar-tag">{{ cat.display_name }}{{ tag_x("category_ids", value=cat.id, label=cat.display_name) }}</span>
         {% endfor %}
         {% for center in filters.centers if center.id|int in params.center_ids %}
-        <span class="filterbar-tag">{{ center.display_name }}</span>
+        <span class="filterbar-tag">{{ center.display_name }}{{ tag_x("center_ids", value=center.id, label=center.display_name) }}</span>
         {% endfor %}
         {% if params.wishlist_only %}
-        <span class="filterbar-tag">♥ Wishlist</span>
+        <span class="filterbar-tag">♥ Wishlist{{ tag_x("wishlist_only", label="wishlist") }}</span>
         {% endif %}
         <a href="/{% if params.view and params.view != 'card' %}?view={{ params.view }}{% endif %}"
            class="filterbar-clear">Clear all</a>
@@ -254,6 +262,26 @@ document.querySelectorAll('.view-toggle-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
         document.getElementById('view-input').value = this.dataset.view;
         document.getElementById('filter-form').submit();
+    });
+});
+
+// Tag dismiss-X: clear matching form input(s) and resubmit
+document.querySelectorAll('.filterbar-tag-x').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var form = document.getElementById('filter-form');
+        var names = (btn.dataset.clear || '').split(/\s+/).filter(Boolean);
+        var value = btn.dataset.value;
+        names.forEach(function (name) {
+            form.querySelectorAll('[name="' + name + '"]').forEach(function (input) {
+                if (value !== undefined && input.value !== value) return;
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+        });
+        form.submit();
     });
 });
 

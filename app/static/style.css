@@ -423,9 +423,36 @@ a:hover {
     gap: 0.3rem;
     background: #eef3f4;
     color: #3a5a65;
-    padding: 0.2rem 0.6rem;
+    padding: 0.2rem 0.35rem 0.2rem 0.6rem;
     border-radius: 999px;
     font-size: 0.78rem;
+}
+
+.filterbar-tag-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.05rem;
+    height: 1.05rem;
+    padding: 0;
+    margin-left: 0.15rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #6a7a80;
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.filterbar-tag-x:hover {
+    background: #d6e0e3;
+    color: #2d3538;
+}
+
+.filterbar-tag-x:focus-visible {
+    outline: 2px solid #5a7d8a;
+    outline-offset: 1px;
 }
 
 .filterbar-clear {
