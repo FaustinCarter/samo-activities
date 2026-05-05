@@ -42,23 +42,38 @@ a:hover {
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+    min-width: 0;
 }
 
 .header-logo-link {
     display: inline-flex;
     align-items: center;
+    min-width: 0;
+    flex-shrink: 1;
 }
 
 .header-logo {
     display: block;
-    height: 5rem;
+    max-height: 5rem;
+    height: auto;
     width: auto;
+    max-width: 100%;
 }
 
 .header-tagline {
     font-weight: normal;
-    font-size: 1rem;
+    font-size: clamp(0.7rem, 2.8vw, 1rem);
     opacity: 0.9;
+}
+
+.header-tagline-link {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.header-tagline-link:hover {
+    text-decoration: underline;
+    opacity: 0.8;
 }
 
 .site-header a {
@@ -81,6 +96,7 @@ a:hover {
     align-items: center;
     gap: 0.75rem;
     font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
 .header-user {

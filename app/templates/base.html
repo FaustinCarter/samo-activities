@@ -9,7 +9,7 @@
 <body>
     <header class="site-header">
         <div class="container header-row">
-            <h1><a href="/" class="header-logo-link"><img src="{{ static_url('header.png') }}" alt="SaMo Rec" class="header-logo"></a> <span class="header-tagline">Alternate frontend for Santa Monica's ActiveNet site</span></h1>
+            <h1><a href="/" class="header-logo-link"><img src="{{ static_url('header.png') }}" alt="SaMo Rec" class="header-logo"></a> <span class="header-tagline">Alternate frontend for Santa Monica's <a href="{{ original_site_link }}" class="header-tagline-link">ActiveNet</a> site</span></h1>
             <nav class="header-auth">
                 {% if api_client is defined and api_client.is_authenticated %}
                 <span class="header-user">{{ api_client.user_info.first_name }}</span>
