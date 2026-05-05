@@ -38,6 +38,27 @@ a:hover {
 .site-header h1 {
     margin: 0;
     font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.header-logo-link {
+    display: inline-flex;
+    align-items: center;
+}
+
+.header-logo {
+    display: block;
+    height: 5rem;
+    width: auto;
+}
+
+.header-tagline {
+    font-weight: normal;
+    font-size: 1rem;
+    opacity: 0.9;
 }
 
 .site-header a {
