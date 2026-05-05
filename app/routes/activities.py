@@ -23,8 +23,8 @@ async def browse_activities(
     time_after: str = "",
     time_before: str = "",
     days_of_week: typing.Annotated[list[int] | None, fastapi.Query()] = None,
-    min_age: int | None = None,
-    max_age: int | None = None,
+    min_age: str = "",
+    max_age: str = "",
     category_ids: typing.Annotated[list[int] | None, fastapi.Query()] = None,
     center_ids: typing.Annotated[list[int] | None, fastapi.Query()] = None,
     wishlist_only: bool = False,
@@ -32,6 +32,10 @@ async def browse_activities(
     page: int = 1,
 ):
     """Browse and search activities with filters."""
+    # Coerce blank strings from form to None for optional int fields.
+    min_age_int = int(min_age) if min_age.strip().isdigit() else None
+    max_age_int = int(max_age) if max_age.strip().isdigit() else None
+
     if wishlist_only and api_client.is_authenticated:
         filters_task = activities_service.get_filters(api_client)
         wishlist_task = activities_service.get_wishlist(api_client)
@@ -56,8 +60,8 @@ async def browse_activities(
             time_after_str=time_after,
             time_before_str=time_before,
             days_of_week=days_bitmask,
-            min_age=min_age,
-            max_age=max_age,
+            min_age=min_age_int,
+            max_age=max_age_int,
             activity_category_ids=category_ids or [],
             center_ids=center_ids or [],
         )
@@ -89,8 +93,8 @@ async def browse_activities(
         "time_after": time_after,
         "time_before": time_before,
         "days_of_week": days_of_week or [],
-        "min_age": min_age,
-        "max_age": max_age,
+        "min_age": min_age_int,
+        "max_age": max_age_int,
         "category_ids": category_ids or [],
         "center_ids": center_ids or [],
         "wishlist_only": wishlist_only,
