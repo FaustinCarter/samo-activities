@@ -2,9 +2,11 @@ import datetime
 import hashlib
 import logging
 import pathlib
+import re
 
 import fastapi
 import nh3
+from fastapi import responses
 from fastapi import staticfiles
 from fastapi import templating
 
@@ -38,6 +40,17 @@ def _sanitize_html(value: str) -> str:
     return nh3.clean(value)
 
 
+def _meta_description(value: str, max_length: int = 160) -> str:
+    """Strip HTML, collapse whitespace, and truncate for use in <meta name=description>."""
+    if not value:
+        return ""
+    plain = nh3.clean(value, tags=set())
+    plain = re.sub(r"\s+", " ", plain).strip()
+    if len(plain) <= max_length:
+        return plain
+    return plain[: max_length - 1].rstrip() + "…"
+
+
 def _activity_code_color(value: str) -> str:
     """Hash an activity code (e.g. "1201.101") to a stable HSL color.
 
@@ -66,9 +79,11 @@ def create_app() -> fastapi.FastAPI:
     templates.env.filters["format_date"] = _format_date
     templates.env.filters["sanitize_html"] = _sanitize_html
     templates.env.filters["activity_code_color"] = _activity_code_color
+    templates.env.filters["meta_description"] = _meta_description
 
     # Template globals
     templates.env.globals["original_site_link"] = config.settings.original_site_link
+    templates.env.globals["site_url"] = config.settings.site_url
 
     app.state.templates = templates
 
@@ -92,6 +107,20 @@ def create_app() -> fastapi.FastAPI:
 
     # Session middleware — resolves/creates sessions and sets the cookie
     app.add_middleware(BaseHTTPMiddleware, dispatch=session_middleware)
+
+    ROBOTS_TXT = """\
+User-agent: *
+Disallow: /login
+Disallow: /logout
+Disallow: /api/
+Allow: /
+
+Crawl-delay: 5
+"""
+
+    @app.get("/robots.txt", include_in_schema=False)
+    async def robots_txt() -> responses.PlainTextResponse:
+        return responses.PlainTextResponse(ROBOTS_TXT)
 
     # Include routes
     app.include_router(auth_routes.router)

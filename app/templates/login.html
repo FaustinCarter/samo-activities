@@ -2,10 +2,13 @@
 
 {% block title %}Sign In — SaMo Rec: Activity Browser{% endblock %}
 
+{% block canonical %}{% endblock %}
+{% block head_extra %}<meta name="robots" content="noindex">{% endblock %}
+
 {% block content %}
 <section class="login-section">
     <div class="login-card">
-        <h2>Sign In</h2>
+        <h1>Sign In</h1>
         <p class="login-subtitle">Log in with your ActiveNet account</p>
 
         {% if error %}

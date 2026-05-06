@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}{{ detail.activity_name }} — SaMo Rec: Activity Browser{% endblock %}
+{% block title %}{{ detail.activity_name }}{% if detail.category %} — {{ detail.category }}{% endif %} | Santa Monica Recreation{% endblock %}
+
+{% block description %}{% set first_center = detail.centers[0] if detail.centers else None -%}
+{{ detail.activity_name }}{% if detail.first_date %} ({{ detail.first_date|format_date }}{% if detail.last_date and detail.last_date != detail.first_date %}–{{ detail.last_date|format_date }}{% endif %}){% endif %}{% if first_center %} at {{ first_center.name }}, Santa Monica{% endif %}{% if detail.age_description %}. Ages {{ detail.age_description }}{% endif %}.{% if detail.catalog_description %} {{ detail.catalog_description|meta_description(80) }}{% endif %}{% endblock %}
+
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/activity/{{ detail.activity_id }}">{% endblock %}
 
 {% block content %}
 <div class="detail-page">

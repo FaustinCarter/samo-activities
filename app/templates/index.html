@@ -12,7 +12,15 @@
 {% set age_active = params.min_age is not none or params.max_age is not none %}
 {% set day_labels = [(0, 'Sun'), (1, 'Mon'), (2, 'Tue'), (3, 'Wed'), (4, 'Thu'), (5, 'Fri'), (6, 'Sat')] %}
 
+{% block title %}{% if params.q %}{{ params.q }} — Santa Monica Recreation Activities{% else %}Santa Monica Recreation Activities — Browse Classes, Swim Lessons & Sports{% endif %}{% endblock %}
+
+{% block description %}{% if params.q %}Search "{{ params.q }}" across Santa Monica recreation activities. Schedules, locations, ages, and availability for every program.{% else %}Browse Santa Monica recreation activities — swim lessons, sports leagues, fitness classes, and summer camps. Schedules and availability at a glance.{% endif %}{% endblock %}
+
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/">{% endblock %}
+
 {% block content %}
+<h1 class="page-title">{% if params.q %}Search results for &ldquo;{{ params.q }}&rdquo;{% else %}Santa Monica Recreation Activities{% endif %}</h1>
+
 <form method="get" action="/" class="filterbar" id="filter-form">
     <input type="hidden" name="view" id="view-input" value="{{ params.view }}">
 

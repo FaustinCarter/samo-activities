@@ -3,6 +3,7 @@ import pydantic_settings
 
 class Settings(pydantic_settings.BaseSettings):
     base_url: str = "https://anc.apm.activecommunities.com/santamonicarecreation/rest"
+    site_url: str = "https://samorec.com"
     locale: str = "en-US"
     page_size: int = 20
     host: str = "0.0.0.0"

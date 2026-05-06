@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SaMo Rec: Activity Browser{% endblock %}</title>
+    <title>{% block title %}Santa Monica Recreation Activities — SaMo Rec{% endblock %}</title>
+    <meta name="description" content="{% block description %}Browse Santa Monica recreation activities — classes, swim lessons, sports, and camps. A faster, simpler alternative to the ActiveNet site.{% endblock %}">
+    {% block canonical %}<link rel="canonical" href="{{ site_url }}/">{% endblock %}
+    {% block head_extra %}{% endblock %}
     <link rel="stylesheet" href="{{ static_url('style.css') }}">
 </head>
 <body>
     <header class="site-header">
         <div class="container header-row">
-            <h1><a href="/" class="header-logo-link"><img src="{{ static_url('header.png') }}" alt="SaMo Rec" class="header-logo"></a> <span class="header-tagline">Alternate frontend for Santa Monica's <a href="{{ original_site_link }}" class="header-tagline-link">ActiveNet</a> site</span></h1>
+            <div class="site-brand"><a href="/" class="header-logo-link"><img src="{{ static_url('header.png') }}" alt="SaMo Rec" class="header-logo"></a> <span class="header-tagline">Alternate frontend for Santa Monica's <a href="{{ original_site_link }}" class="header-tagline-link">ActiveNet</a> site</span></div>
             <nav class="header-auth">
                 {% if api_client is defined and api_client.is_authenticated %}
                 <span class="header-user">{{ api_client.user_info.first_name }}</span>
